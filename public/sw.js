@@ -1,5 +1,5 @@
 /*
- * Money Flow Service Worker
+ * Manifly Service Worker
  * --------------------------
  * Custom (no next-pwa / Serwist) so it stays compatible with Next.js 16.
  *
@@ -16,9 +16,9 @@
  * Bumping CACHE_VERSION wipes old caches on the next activation.
  */
 
-const CACHE_VERSION = "v1";
-const PRECACHE = `money-flow-precache-${CACHE_VERSION}`;
-const RUNTIME = `money-flow-runtime-${CACHE_VERSION}`;
+const CACHE_VERSION = "v3"; // bumped for the new Manifly winged-banknote logo / icon set
+const PRECACHE = `manifly-precache-${CACHE_VERSION}`;
+const RUNTIME = `manifly-runtime-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   "/",
@@ -33,6 +33,7 @@ const APP_SHELL = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
+  "/brand/manifly-mark.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -77,6 +78,7 @@ self.addEventListener("message", (event) => {
 const isStaticAsset = (url) =>
   url.pathname.startsWith("/_next/static/") ||
   url.pathname.startsWith("/icons/") ||
+  url.pathname.startsWith("/brand/") ||
   url.pathname === "/manifest.webmanifest" ||
   /\.(?:css|js|woff2?|ttf|otf)$/.test(url.pathname);
 
@@ -174,11 +176,11 @@ self.addEventListener("push", (event) => {
     payload = { body: event.data?.text() };
   }
   event.waitUntil(
-    self.registration.showNotification(payload.title || "Money Flow", {
-      body: payload.body || "Ada pengingat baru dari Money Flow.",
+    self.registration.showNotification(payload.title || "Manifly", {
+      body: payload.body || "Ada pengingat baru dari Manifly.",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
-      tag: payload.tag || "money-flow-push",
+      tag: payload.tag || "manifly-push",
       data: { url: payload.url || "/dashboard" },
     }),
   );

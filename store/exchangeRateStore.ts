@@ -53,7 +53,7 @@ export const useExchangeRateStore = create<ExchangeRateState>()(
       },
     }),
     {
-      name: "money-flow:exchange-rates",
+      name: "manifly:exchange-rates",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ rates: s.rates, lastFetched: s.lastFetched }),
     },

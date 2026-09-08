@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Wallet, Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { authApi, ApiError } from "@/lib/api";
+import { BrandMark } from "@/components/shared/Logo";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -28,9 +29,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="flex flex-col items-center gap-2 mb-8">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Wallet className="h-6 w-6" />
-        </div>
+        <BrandMark size={52} decorative />
         <h1 className="text-2xl font-bold">Lupa Password</h1>
         <p className="text-sm text-muted-foreground text-center">
           Masukkan email kamu dan kami akan kirim link reset password

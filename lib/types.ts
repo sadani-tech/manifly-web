@@ -1,4 +1,4 @@
-// Core domain types for Money Flow.
+// Core domain types for Manifly.
 // All persisted data and store shapes derive from these definitions.
 
 export type TransactionType = "income" | "expense";

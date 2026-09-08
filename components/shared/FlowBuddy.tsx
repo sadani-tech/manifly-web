@@ -7,7 +7,7 @@ interface FlowBuddyProps {
   label?: string;
 }
 
-/** A tiny MoneyFlow companion. Decorative unless a label is supplied. */
+/** A tiny Manifly companion. Decorative unless a label is supplied. */
 export const FlowBuddy: React.FC<FlowBuddyProps> = ({
   size = "md",
   className,

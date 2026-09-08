@@ -1,5 +1,5 @@
 /**
- * Notification helpers for Money Flow.
+ * Notification helpers for Manifly.
  * Wraps the browser Notification API with graceful fallbacks.
  */
 
@@ -18,14 +18,14 @@ export async function showDailyReminderNotification(): Promise<void> {
 
   const registration = await navigator.serviceWorker?.ready;
   if (registration) {
-    await registration.showNotification("Money Flow Reminder", {
+    await registration.showNotification("Manifly Reminder", {
       body: "Don't forget to record your transactions for today! 💰",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
       tag: "daily-reminder",
     });
   } else {
-    new Notification("Money Flow Reminder", {
+    new Notification("Manifly Reminder", {
       body: "Don't forget to record your transactions for today! 💰",
       icon: "/icons/icon-192.png",
     });

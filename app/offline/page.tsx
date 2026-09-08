@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { CloudOff } from "lucide-react";
 
 export const metadata: Metadata = {
-  // Root template appends " · Money Flow", so keep this to just the page name
-  // to avoid "Offline — Money Flow · Money Flow".
+  // Root template appends " · Manifly", so keep this to just the page name
+  // to avoid "Offline — Manifly · Manifly".
   title: "Offline",
   description: "You appear to be offline. Cached pages remain available.",
 };
@@ -19,7 +19,7 @@ export default function OfflinePage() {
       <div className="space-y-2 max-w-md">
         <h1 className="text-2xl font-semibold tracking-tight">You&apos;re offline</h1>
         <p className="text-sm text-muted-foreground">
-          Money Flow can&apos;t reach the network right now. Pages you&apos;ve already
+          Manifly can&apos;t reach the network right now. Pages you&apos;ve already
           opened are still available, and any transactions you&apos;ve recorded
           remain stored on this device.
         </p>

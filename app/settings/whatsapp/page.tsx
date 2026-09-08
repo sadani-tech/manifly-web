@@ -291,7 +291,7 @@ export default function WhatsAppSettingsPage() {
             WhatsApp Bot
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Hubungkan hingga tiga nomor ke satu akun Money Flow.
+            Hubungkan hingga tiga nomor ke satu akun Manifly.
           </p>
         </div>
       </div>

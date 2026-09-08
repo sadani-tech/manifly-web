@@ -56,7 +56,7 @@ export function exportTransactionsToXLSX(
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Transactions");
 
-  XLSX.writeFile(wb, `money-flow-transactions-${todayISO()}.xlsx`);
+  XLSX.writeFile(wb, `manifly-transactions-${todayISO()}.xlsx`);
 }
 
 /** Trigger a CSV download of the supplied transactions. */
@@ -72,7 +72,7 @@ export function exportTransactionsToCSV(
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `money-flow-transactions-${todayISO()}.csv`;
+  a.download = `manifly-transactions-${todayISO()}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

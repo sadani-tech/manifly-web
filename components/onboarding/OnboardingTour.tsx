@@ -14,13 +14,13 @@ const steps = [
 export function OnboardingTour() {
   const [step, setStep] = useState<number | null>(null);
   useEffect(() => {
-    if (v14EnhancementsEnabled && !localStorage.getItem("moneyflow:onboarding-v1")) setStep(0);
+    if (v14EnhancementsEnabled && !localStorage.getItem("manifly:onboarding-v1")) setStep(0);
   }, []);
   if (step === null) return null;
   const current = steps[step];
   const Icon = current.icon;
   const close = () => {
-    localStorage.setItem("moneyflow:onboarding-v1", "done");
+    localStorage.setItem("manifly:onboarding-v1", "done");
     setStep(null);
   };
   return (

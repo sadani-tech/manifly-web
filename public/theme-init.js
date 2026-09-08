@@ -1,5 +1,5 @@
 try {
-  const raw = localStorage.getItem("money-flow:ui");
+  const raw = localStorage.getItem("manifly:ui");
   const selected = raw ? JSON.parse(raw)?.state?.theme : "system";
   const dark =
     selected === "dark" ||

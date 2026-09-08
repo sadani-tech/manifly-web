@@ -38,7 +38,7 @@ export const useNotificationStore = create<NotificationState>()(
       setOverBudgetEnabled: (enabled) => set({ overBudgetEnabled: enabled }),
     }),
     {
-      name: "money-flow:notifications",
+      name: "manifly:notifications",
       storage: createJSONStorage(() => localStorage),
     },
   ),

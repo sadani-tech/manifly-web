@@ -14,10 +14,10 @@ export const DEFAULT_CURRENCY: CurrencyCode = "IDR";
 
 // Storage keys for the localStorage persistence layer.
 export const STORAGE_KEYS = {
-  transactions: "money-flow:transactions",
-  categories: "money-flow:categories",
-  ui: "money-flow:ui",
-  seeded: "money-flow:seeded",
+  transactions: "manifly:transactions",
+  categories: "manifly:categories",
+  ui: "manifly:ui",
+  seeded: "manifly:seeded",
 } as const;
 
 // Color palette used for default categories. Picked for good contrast in

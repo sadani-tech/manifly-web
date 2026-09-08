@@ -18,7 +18,6 @@ import {
   Tags,
   Users,
   UserCircle,
-  Wallet,
   WalletCards,
   WandSparkles,
   type LucideIcon,
@@ -27,6 +26,7 @@ import { NAV_ITEMS, SETTINGS_ITEMS } from "@/lib/constants";
 import { useUIStore } from "@/store/uiStore";
 import { cn } from "@/lib/utils";
 import { FlowBuddy } from "@/components/shared/FlowBuddy";
+import { BrandMark } from "@/components/shared/Logo";
 
 const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -59,17 +59,14 @@ export const Sidebar: React.FC = () => {
     >
       {/* Logo */}
       <div className="flex h-[4.75rem] items-center overflow-hidden border-b border-white/12 px-4">
-        <div className="neo-sticker relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-brand-lime text-brand-navy">
-          <Wallet className="h-[1.1rem] w-[1.1rem]" />
-          <span className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full border-2 border-brand-navy bg-white" />
-        </div>
+        <BrandMark size={40} decorative />
         {!sidebarCollapsed && (
           <div className="ml-3 flex flex-col">
             <span className="text-[15px] font-bold leading-none tracking-[-0.02em]">
-              MoneyFlow
+              Manifly
             </span>
             <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
-              uang, tapi santai
+              Uang cepat, mimpi dekat.
             </span>
           </div>
         )}
