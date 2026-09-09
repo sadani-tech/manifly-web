@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   Bell,
@@ -11,6 +12,8 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  Gauge,
+  LockKeyhole,
   ShieldCheck,
   Sparkles,
   Star,
@@ -26,6 +29,27 @@ interface WaPhoneNumber {
   notificationsEnabled: boolean;
   linkedAt: string;
   lastInboundAt: string | null;
+  state: "active" | "restricted" | "revoked";
+  restrictionGraceEndsAt: string | null;
+}
+
+interface MembershipUsage {
+  key: string;
+  limit: number;
+  used: number;
+  reserved: number;
+  remaining: number;
+  periodStart: string;
+  periodEnd: string;
+  sourcePlanVersion: string;
+}
+
+interface MembershipQuota {
+  status: string;
+  plan: { code: string; name: string; version: number };
+  resetAt: string;
+  pricingNotice: string;
+  usage: MembershipUsage[];
 }
 
 interface WaStatus {
@@ -74,7 +98,9 @@ const PREF_LABELS: {
 ];
 
 export default function WhatsAppSettingsPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<WaStatus | null>(null);
+  const [quota, setQuota] = useState<MembershipQuota | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [newLabel, setNewLabel] = useState("");
@@ -86,6 +112,9 @@ export default function WhatsAppSettingsPage() {
     null,
   );
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
+  const [updatingPref, setUpdatingPref] = useState<
+    keyof NotificationPrefs | null
+  >(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -94,6 +123,7 @@ export default function WhatsAppSettingsPage() {
   // The settings snapshot is loaded once when this client page mounts.
   useEffect(() => {
     void fetchStatus();
+    void fetchQuota();
     void fetchPrefs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -143,7 +173,25 @@ export default function WhatsAppSettingsPage() {
     }
   }
 
+  async function fetchQuota() {
+    try {
+      const res = await fetch(`${API_BASE}/users/whatsapp/quota`, {
+        headers: authHeaders(),
+      });
+      if (res.ok) setQuota(await res.json());
+    } catch {
+      // Number management remains usable if the quota summary is unavailable.
+    }
+  }
+
   async function handleLink() {
+    const currentNumbers = status?.numbers.length ?? 0;
+    if (status && currentNumbers >= status.limit) {
+      router.push(
+        `/settings/membership?source=whatsapp-number-limit&required=${currentNumbers + 1}`,
+      );
+      return;
+    }
     setSubmitting(true);
     setMessage(null);
     try {
@@ -257,6 +305,7 @@ export default function WhatsAppSettingsPage() {
 
   async function togglePref(key: keyof NotificationPrefs) {
     if (!prefs) return;
+    setUpdatingPref(key);
     const previous = prefs;
     const next = { ...prefs, [key]: !prefs[key] };
     setPrefs(next);
@@ -270,11 +319,24 @@ export default function WhatsAppSettingsPage() {
       else setPrefs(previous);
     } catch {
       setPrefs(previous);
+    } finally {
+      setUpdatingPref(null);
     }
   }
 
   const numbers = status?.numbers ?? [];
   const canAdd = numbers.length < (status?.limit ?? 3);
+  const chatUsage = quota?.usage.find(
+    (item) => item.key === "whatsapp.chat_actions",
+  );
+  const voiceUsage = quota?.usage.find(
+    (item) => item.key === "whatsapp.voice_seconds",
+  );
+  const proactiveUsage = quota?.usage.find(
+    (item) => item.key === "whatsapp.proactive_deliveries",
+  );
+  const usagePercent = (usage?: MembershipUsage) =>
+    usage?.limit ? Math.min(100, (usage.used / usage.limit) * 100) : 0;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 py-2 sm:py-4">
@@ -291,10 +353,79 @@ export default function WhatsAppSettingsPage() {
             WhatsApp Bot
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Hubungkan hingga tiga nomor ke satu akun Manifly.
+            Kelola nomor, membership, dan kuota WhatsApp akunmu.
           </p>
         </div>
       </div>
+
+      {quota && (
+        <div className="mf-card space-y-5 rounded-2xl border border-border bg-card p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+                <Gauge className="h-4 w-4" /> Membership
+              </p>
+              <h2 className="mt-1 text-xl font-bold">Plan {quota.plan.name}</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Reset{" "}
+                {new Date(quota.resetAt).toLocaleDateString("id-ID", {
+                  dateStyle: "long",
+                  timeZone: "Asia/Jakarta",
+                })}
+              </p>
+            </div>
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              {quota.status.replace("_", " ")}
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                label: "Chat action",
+                usage: chatUsage,
+                format: (value: number) => value.toLocaleString("id-ID"),
+              },
+              {
+                label: "Voice note",
+                usage: voiceUsage,
+                format: (value: number) => `${Math.floor(value / 60)} menit`,
+              },
+              {
+                label: "Pesan proaktif berbayar",
+                usage: proactiveUsage,
+                format: (value: number) => value.toLocaleString("id-ID"),
+              },
+            ].map(({ label, usage, format }) => (
+              <div key={label}>
+                <div className="mb-1.5 flex justify-between text-xs">
+                  <span className="font-medium">{label}</span>
+                  <span className="text-muted-foreground">
+                    {format(usage?.used ?? 0)} / {format(usage?.limit ?? 0)}
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={`h-full rounded-full transition-all ${usagePercent(usage) >= 90 ? "bg-destructive" : usagePercent(usage) >= 70 ? "bg-amber-500" : "bg-primary"}`}
+                    style={{ width: `${usagePercent(usage)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {quota.plan.code === "free" && (
+            <p className="flex gap-2 rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
+              <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+              Pesan proaktif di luar window gratis dan nomor tambahan terkunci
+              pada plan Free.
+            </p>
+          )}
+          <p className="text-[11px] text-muted-foreground">
+            {quota.pricingNotice}
+          </p>
+        </div>
+      )}
 
       <div className="mf-card rounded-2xl border border-border bg-card p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -331,6 +462,11 @@ export default function WhatsAppSettingsPage() {
                           <Star className="h-3 w-3" /> Utama
                         </span>
                       )}
+                      {number.state === "restricted" && (
+                        <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                          Dibatasi plan
+                        </span>
+                      )}
                     </div>
                     <p className="mt-1 font-mono text-sm text-muted-foreground">
                       {number.phone}
@@ -340,7 +476,9 @@ export default function WhatsAppSettingsPage() {
                       {new Date(number.linkedAt).toLocaleDateString("id-ID")}
                     </p>
                   </div>
-                  <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-500" />
+                  <ShieldCheck
+                    className={`h-5 w-5 shrink-0 ${number.state === "restricted" ? "text-amber-500" : "text-emerald-500"}`}
+                  />
                 </div>
 
                 {editingId === number.id ? (
@@ -393,7 +531,11 @@ export default function WhatsAppSettingsPage() {
                     type="button"
                     role="switch"
                     aria-checked={number.notificationsEnabled}
-                    disabled={submitting || number.isPrimary}
+                    disabled={
+                      submitting ||
+                      number.isPrimary ||
+                      number.state === "restricted"
+                    }
                     onClick={() =>
                       void updateNumber(number.id, {
                         notificationsEnabled: !number.notificationsEnabled,
@@ -437,63 +579,98 @@ export default function WhatsAppSettingsPage() {
         )}
       </div>
 
-      {canAdd && !loading && (
+      {!loading && (
         <div className="mf-card space-y-4 rounded-2xl border border-border bg-card p-6">
           <div className="flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
             <h2 className="font-semibold">Tambah nomor</h2>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              value={newLabel}
-              maxLength={30}
-              onChange={(event) => setNewLabel(event.target.value)}
-              placeholder={
-                numbers.length === 0
-                  ? "Label, mis. Pribadi"
-                  : "Label, mis. Kerja"
-              }
-              className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
-              aria-label="Label nomor baru"
-            />
-            <button
-              type="button"
-              onClick={() => void handleLink()}
-              disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-            >
-              <Link className="h-4 w-4" />
-              {submitting ? "Membuat link..." : "Buat link"}
-            </button>
-          </div>
-
-          {linkChallenge && (
-            <div className="space-y-3 rounded-2xl border border-primary/15 bg-primary/[0.045] p-4">
-              <p className="text-xs text-muted-foreground">
-                Link untuk <strong>{linkChallenge.label}</strong> berlaku sampai{" "}
-                {new Date(linkChallenge.expiresAt).toLocaleTimeString("id-ID", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-                . Buka WhatsApp dari nomor yang ingin ditambahkan.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <a
-                  href={linkChallenge.linkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
-                >
-                  <ExternalLink className="h-4 w-4" /> Buka WhatsApp
-                </a>
+          {canAdd ? (
+            <>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={newLabel}
+                  maxLength={30}
+                  onChange={(event) => setNewLabel(event.target.value)}
+                  placeholder={
+                    numbers.length === 0
+                      ? "Label, mis. Pribadi"
+                      : "Label, mis. Kerja"
+                  }
+                  className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+                  aria-label="Label nomor baru"
+                />
                 <button
                   type="button"
-                  onClick={() => void fetchStatus()}
-                  className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+                  onClick={() => void handleLink()}
+                  disabled={submitting}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
                 >
-                  <RefreshCw className="h-4 w-4" /> Cek status
+                  <Link className="h-4 w-4" />
+                  {submitting ? "Membuat link..." : "Buat link"}
                 </button>
               </div>
+
+              {linkChallenge && (
+                <div className="space-y-3 rounded-2xl border border-primary/15 bg-primary/[0.045] p-4">
+                  <p className="text-xs text-muted-foreground">
+                    Link untuk <strong>{linkChallenge.label}</strong> berlaku
+                    sampai{" "}
+                    {new Date(linkChallenge.expiresAt).toLocaleTimeString(
+                      "id-ID",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
+                    . Buka WhatsApp dari nomor yang ingin ditambahkan.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href={linkChallenge.linkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+                    >
+                      <ExternalLink className="h-4 w-4" /> Buka WhatsApp
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => void fetchStatus()}
+                      className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+                    >
+                      <RefreshCw className="h-4 w-4" /> Cek status
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="rounded-2xl border border-brand-lime/60 bg-brand-lime/10 p-4">
+              <div className="flex gap-3">
+                <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-kicker" />
+                <div>
+                  <p className="font-semibold">
+                    Slot nomor pada plan {quota?.plan.name ?? "saat ini"} sudah
+                    penuh
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Lihat plan yang mendukung {numbers.length + 1} nomor
+                    WhatsApp. Pembayaran masih dinonaktifkan.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/settings/membership?source=whatsapp-number-limit&required=${numbers.length + 1}`,
+                  )
+                }
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-brand-lime px-4 text-sm font-bold text-brand-navy"
+              >
+                Lihat Membership
+              </button>
             </div>
           )}
         </div>
@@ -519,30 +696,34 @@ export default function WhatsAppSettingsPage() {
           )}
           <div className="space-y-3">
             {PREF_LABELS.map(({ key, label, desc }) => (
-              <div
+              <label
                 key={key}
-                className="flex items-start justify-between gap-3 rounded-xl p-2 hover:bg-muted/50"
+                className="flex cursor-pointer items-start justify-between gap-3 rounded-xl p-2 hover:bg-muted/50"
               >
                 <div>
                   <p className="text-sm font-medium">{label}</p>
                   <p className="text-xs text-muted-foreground">{desc}</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={prefs[key]}
-                  onClick={() => void togglePref(key)}
-                  className={`focus-ring relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${
-                    prefs[key] ? "bg-primary" : "bg-muted-foreground/30"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-                      prefs[key] ? "translate-x-[22px]" : "translate-x-0.5"
-                    }`}
+                <span className="relative mt-0.5 shrink-0">
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    aria-checked={prefs[key]}
+                    className="peer sr-only"
+                    checked={prefs[key]}
+                    disabled={updatingPref === key}
+                    onChange={() => void togglePref(key)}
                   />
-                </button>
-              </div>
+                  <span
+                    aria-hidden
+                    className="block h-6 w-11 rounded-full bg-muted-foreground/30 transition-colors peer-checked:bg-brand-lime peer-focus-visible:ring-4 peer-focus-visible:ring-primary/20 peer-disabled:opacity-50"
+                  />
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full border border-black/10 bg-white shadow-sm transition-transform peer-checked:translate-x-5"
+                  />
+                </span>
+              </label>
             ))}
           </div>
         </div>

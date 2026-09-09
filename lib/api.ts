@@ -400,6 +400,41 @@ export const waNotificationsApi = {
     }),
 };
 
+export interface MembershipUsage {
+  key: string;
+  limit: number;
+  used: number;
+  reserved: number;
+  remaining: number;
+  periodStart: string;
+  periodEnd: string;
+  sourcePlanVersion: string;
+}
+
+export interface MembershipPlanSummary {
+  code: "free" | "plus" | "pro";
+  name: string;
+  version: number;
+  entitlements: Record<string, number>;
+  pricingNotice: string;
+}
+
+export interface MembershipSnapshot {
+  status: string;
+  plan: Pick<MembershipPlanSummary, "code" | "name" | "version">;
+  periodStart: string;
+  periodEnd: string;
+  resetAt: string;
+  entitlements: Record<string, number>;
+  pricingNotice: string;
+}
+
+export const membershipApi = {
+  get: () => request<MembershipSnapshot>("/membership"),
+  plans: () => request<MembershipPlanSummary[]>("/membership/plans"),
+  usage: () => request<MembershipUsage[]>("/membership/usage"),
+};
+
 // ── Backup ────────────────────────────────────────────────────────────────────
 
 export interface BackupData {
@@ -474,7 +509,8 @@ export type UpdateRecurringInput = Partial<CreateRecurringInput> & {
 };
 
 // Accounts, sharing, transfers, smart rules, and financial health (v1.6)
-export type AccountType = "cash" | "bank" | "e_wallet" | "credit_card" | "other";
+export type AccountType =
+  "cash" | "bank" | "e_wallet" | "credit_card" | "other";
 export type AccountRole = "owner" | "viewer" | "contributor";
 
 export interface ApiAccount {
@@ -510,24 +546,65 @@ export interface ApiAccountShare {
 export const accountsApi = {
   getAll: () => request<ApiAccount[]>("/accounts"),
   getActive: () => request<{ accountId: string }>("/accounts/active"),
-  setActive: (accountId: string) => request<{ accountId: string }>("/accounts/active", { method: "PUT", body: JSON.stringify({ accountId }) }),
-  create: (data: { name: string; type: AccountType; currency: string; openingBalance: number; color?: string; icon?: string }) =>
-    request<ApiAccount>("/accounts", { method: "POST", body: JSON.stringify(data) }),
-  update: (id: string, data: Partial<Pick<ApiAccount, "name" | "type" | "currency" | "color" | "icon">>) =>
-    request<ApiAccount>(`/accounts/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
-  archive: (id: string) => request<void>(`/accounts/${id}`, { method: "DELETE" }),
+  setActive: (accountId: string) =>
+    request<{ accountId: string }>("/accounts/active", {
+      method: "PUT",
+      body: JSON.stringify({ accountId }),
+    }),
+  create: (data: {
+    name: string;
+    type: AccountType;
+    currency: string;
+    openingBalance: number;
+    color?: string;
+    icon?: string;
+  }) =>
+    request<ApiAccount>("/accounts", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (
+    id: string,
+    data: Partial<
+      Pick<ApiAccount, "name" | "type" | "currency" | "color" | "icon">
+    >,
+  ) =>
+    request<ApiAccount>(`/accounts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  archive: (id: string) =>
+    request<void>(`/accounts/${id}`, { method: "DELETE" }),
   adjust: (id: string, amount: number, reason: string) =>
-    request<ApiTransaction>(`/accounts/${id}/adjustments`, { method: "POST", body: JSON.stringify({ amount, reason }) }),
-  getShares: (id: string) => request<ApiAccountShare[]>(`/accounts/${id}/shares`),
+    request<ApiTransaction>(`/accounts/${id}/adjustments`, {
+      method: "POST",
+      body: JSON.stringify({ amount, reason }),
+    }),
+  getShares: (id: string) =>
+    request<ApiAccountShare[]>(`/accounts/${id}/shares`),
   invite: (id: string, email: string, role: "viewer" | "contributor") =>
-    request<ApiAccountShare>(`/accounts/${id}/shares`, { method: "POST", body: JSON.stringify({ email, role }) }),
+    request<ApiAccountShare>(`/accounts/${id}/shares`, {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    }),
   updateShare: (id: string, shareId: string, role: "viewer" | "contributor") =>
-    request<ApiAccountShare>(`/accounts/${id}/shares/${shareId}`, { method: "PATCH", body: JSON.stringify({ role }) }),
-  revokeShare: (id: string, shareId: string) => request<void>(`/accounts/${id}/shares/${shareId}`, { method: "DELETE" }),
+    request<ApiAccountShare>(`/accounts/${id}/shares/${shareId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    }),
+  revokeShare: (id: string, shareId: string) =>
+    request<void>(`/accounts/${id}/shares/${shareId}`, { method: "DELETE" }),
   invitations: () => request<ApiAccountShare[]>("/account-invitations"),
-  acceptInvitation: (token: string) => request<ApiAccountShare>(`/account-invitations/${token}/accept`, { method: "POST" }),
-  declineInvitation: (token: string) => request<void>(`/account-invitations/${token}/decline`, { method: "POST" }),
-  leave: (shareId: string) => request<void>(`/account-invitations/${shareId}/leave`, { method: "DELETE" }),
+  acceptInvitation: (token: string) =>
+    request<ApiAccountShare>(`/account-invitations/${token}/accept`, {
+      method: "POST",
+    }),
+  declineInvitation: (token: string) =>
+    request<void>(`/account-invitations/${token}/decline`, { method: "POST" }),
+  leave: (shareId: string) =>
+    request<void>(`/account-invitations/${shareId}/leave`, {
+      method: "DELETE",
+    }),
 };
 
 export interface ApiTransfer {
@@ -545,16 +622,35 @@ export interface ApiTransfer {
 
 export const transfersApi = {
   getAll: () => request<ApiTransfer[]>("/transfers"),
-  create: (data: Omit<ApiTransfer, "id" | "sourceAccount" | "destinationAccount"> & { idempotencyKey?: string }) =>
-    request<ApiTransfer>("/transfers", { method: "POST", body: JSON.stringify(data) }),
-  delete: (id: string) => request<void>(`/transfers/${id}`, { method: "DELETE" }),
+  create: (
+    data: Omit<ApiTransfer, "id" | "sourceAccount" | "destinationAccount"> & {
+      idempotencyKey?: string;
+    },
+  ) =>
+    request<ApiTransfer>("/transfers", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) =>
+    request<void>(`/transfers/${id}`, { method: "DELETE" }),
 };
 
 export interface ApiSmartRule {
   id: string;
   name: string;
-  conditions: { descriptionContains?: string; source?: string; accountId?: string; minAmount?: number; maxAmount?: number; type?: "income" | "expense" };
-  actions: { categoryId?: string; tags?: string[]; normalizedDescription?: string };
+  conditions: {
+    descriptionContains?: string;
+    source?: string;
+    accountId?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    type?: "income" | "expense";
+  };
+  actions: {
+    categoryId?: string;
+    tags?: string[];
+    normalizedDescription?: string;
+  };
   priority: number;
   active: boolean;
   stopOnMatch: boolean;
@@ -562,29 +658,71 @@ export interface ApiSmartRule {
 
 export const smartRulesApi = {
   getAll: () => request<ApiSmartRule[]>("/smart-rules"),
-  suggestions: () => request<Array<{ merchant: string; occurrences: number; conditions: ApiSmartRule["conditions"]; actions: ApiSmartRule["actions"] }>>("/smart-rules/suggestions"),
-  create: (data: Omit<ApiSmartRule, "id">) => request<ApiSmartRule>("/smart-rules", { method: "POST", body: JSON.stringify(data) }),
-  update: (id: string, data: Partial<Omit<ApiSmartRule, "id">>) => request<ApiSmartRule>(`/smart-rules/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
-  delete: (id: string) => request<void>(`/smart-rules/${id}`, { method: "DELETE" }),
-  preview: (id: string) => request<{ count: number; sample: ApiTransaction[] }>(`/smart-rules/${id}/preview`, { method: "POST" }),
-  apply: (id: string) => request<{ batchId: string; affected: number; reversibleUntil: string }>(`/smart-rules/${id}/apply`, { method: "POST" }),
-  undo: (batchId: string) => request<{ restored: number }>(`/smart-rules/batches/${batchId}/undo`, { method: "POST" }),
+  suggestions: () =>
+    request<
+      Array<{
+        merchant: string;
+        occurrences: number;
+        conditions: ApiSmartRule["conditions"];
+        actions: ApiSmartRule["actions"];
+      }>
+    >("/smart-rules/suggestions"),
+  create: (data: Omit<ApiSmartRule, "id">) =>
+    request<ApiSmartRule>("/smart-rules", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id: string, data: Partial<Omit<ApiSmartRule, "id">>) =>
+    request<ApiSmartRule>(`/smart-rules/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) =>
+    request<void>(`/smart-rules/${id}`, { method: "DELETE" }),
+  preview: (id: string) =>
+    request<{ count: number; sample: ApiTransaction[] }>(
+      `/smart-rules/${id}/preview`,
+      { method: "POST" },
+    ),
+  apply: (id: string) =>
+    request<{ batchId: string; affected: number; reversibleUntil: string }>(
+      `/smart-rules/${id}/apply`,
+      { method: "POST" },
+    ),
+  undo: (batchId: string) =>
+    request<{ restored: number }>(`/smart-rules/batches/${batchId}/undo`, {
+      method: "POST",
+    }),
 };
 
 export interface ApiFinancialHealth {
   enabled: boolean;
   period: string;
   score?: number | null;
-  components?: Record<string, { score: number | null; weight: number; reason: string; value?: number }>;
+  components?: Record<
+    string,
+    { score: number | null; weight: number; reason: string; value?: number }
+  >;
   formulaVersion?: string;
-  dataQuality?: { sufficient: boolean; transactionCount: number; reasons: string[] };
+  dataQuality?: {
+    sufficient: boolean;
+    transactionCount: number;
+    reasons: string[];
+  };
   comparison?: { period: string; score: number | null; change: number | null };
   recommendations?: string[];
 }
 
 export const financialHealthApi = {
-  get: (period?: string) => request<ApiFinancialHealth>(`/financial-health${period ? `?period=${period}` : ""}`),
-  setEnabled: (enabled: boolean) => request<{ enabled: boolean }>("/financial-health/preference", { method: "PUT", body: JSON.stringify({ enabled }) }),
+  get: (period?: string) =>
+    request<ApiFinancialHealth>(
+      `/financial-health${period ? `?period=${period}` : ""}`,
+    ),
+  setEnabled: (enabled: boolean) =>
+    request<{ enabled: boolean }>("/financial-health/preference", {
+      method: "PUT",
+      body: JSON.stringify({ enabled }),
+    }),
 };
 
 // ── Debts ─────────────────────────────────────────────────────────────────────

@@ -38,20 +38,82 @@ export const CATEGORY_COLORS = [
 ] as const;
 
 export const DEFAULT_CATEGORIES: Category[] = [
-  { id: "cat-salary", name: "Salary", color: "#10b981", icon: "Briefcase", type: "income", isDefault: true },
-  { id: "cat-investment", name: "Investment", color: "#06b6d4", icon: "TrendingUp", type: "both", isDefault: true },
-  { id: "cat-food", name: "Food", color: "#f97316", icon: "Utensils", type: "expense", isDefault: true },
-  { id: "cat-transport", name: "Transport", color: "#3b82f6", icon: "Car", type: "expense", isDefault: true },
-  { id: "cat-entertainment", name: "Entertainment", color: "#8b5cf6", icon: "Film", type: "expense", isDefault: true },
-  { id: "cat-health", name: "Health", color: "#ec4899", icon: "HeartPulse", type: "expense", isDefault: true },
-  { id: "cat-shopping", name: "Shopping", color: "#a855f7", icon: "ShoppingBag", type: "expense", isDefault: true },
-  { id: "cat-bills", name: "Bills", color: "#ef4444", icon: "Receipt", type: "expense", isDefault: true },
-  { id: "cat-other", name: "Other", color: "#64748b", icon: "Tag", type: "both", isDefault: true },
+  {
+    id: "cat-salary",
+    name: "Salary",
+    color: "#10b981",
+    icon: "Briefcase",
+    type: "income",
+    isDefault: true,
+  },
+  {
+    id: "cat-investment",
+    name: "Investment",
+    color: "#06b6d4",
+    icon: "TrendingUp",
+    type: "both",
+    isDefault: true,
+  },
+  {
+    id: "cat-food",
+    name: "Food",
+    color: "#f97316",
+    icon: "Utensils",
+    type: "expense",
+    isDefault: true,
+  },
+  {
+    id: "cat-transport",
+    name: "Transport",
+    color: "#3b82f6",
+    icon: "Car",
+    type: "expense",
+    isDefault: true,
+  },
+  {
+    id: "cat-entertainment",
+    name: "Entertainment",
+    color: "#8b5cf6",
+    icon: "Film",
+    type: "expense",
+    isDefault: true,
+  },
+  {
+    id: "cat-health",
+    name: "Health",
+    color: "#ec4899",
+    icon: "HeartPulse",
+    type: "expense",
+    isDefault: true,
+  },
+  {
+    id: "cat-shopping",
+    name: "Shopping",
+    color: "#a855f7",
+    icon: "ShoppingBag",
+    type: "expense",
+    isDefault: true,
+  },
+  {
+    id: "cat-bills",
+    name: "Bills",
+    color: "#ef4444",
+    icon: "Receipt",
+    type: "expense",
+    isDefault: true,
+  },
+  {
+    id: "cat-other",
+    name: "Other",
+    color: "#64748b",
+    icon: "Tag",
+    type: "both",
+    isDefault: true,
+  },
 ];
 
 export const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard" },
-  { href: "/accounts", label: "Accounts", icon: "WalletCards" },
   { href: "/transactions", label: "Transactions", icon: "ArrowLeftRight" },
   { href: "/budget", label: "Budget", icon: "PiggyBank" },
   { href: "/recurring", label: "Recurring", icon: "Repeat" },
@@ -66,6 +128,11 @@ export const NAV_ITEMS = [
 
 export const SETTINGS_ITEMS = [
   { href: "/settings/profile", label: "Profile", icon: "UserCircle" },
+  { href: "/settings/membership", label: "Membership", icon: "Crown" },
   { href: "/settings/whatsapp", label: "WhatsApp", icon: "MessageSquare" },
-  { href: "/accounts", label: "Account Sharing", icon: "Users" },
+  {
+    href: "/settings/accounts",
+    label: "Accounts / Pockets",
+    icon: "WalletCards",
+  },
 ] as const;

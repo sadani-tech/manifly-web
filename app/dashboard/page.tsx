@@ -34,14 +34,19 @@ export default function DashboardPage() {
   const { fmt } = useCurrency();
   const accounts = useAccountStore((state) => state.accounts);
   const activeAccountId = useAccountStore((state) => state.activeAccountId);
-  const activeAccount = accounts.find((account) => account.id === activeAccountId);
+  const activeAccount = accounts.find(
+    (account) => account.id === activeAccountId,
+  );
   const { transactions } = useTransactions();
   const ledgerBalance = useMemo(
     () =>
       (activeAccount?.openingBalance ?? 0) +
       transactions.reduce(
         (total, transaction) =>
-          total + (transaction.type === "income" ? transaction.amount : -transaction.amount),
+          total +
+          (transaction.type === "income"
+            ? transaction.amount
+            : -transaction.amount),
         0,
       ),
     [activeAccount?.openingBalance, transactions],
@@ -51,7 +56,10 @@ export default function DashboardPage() {
   // Fetch budgets for the current month on mount
   useEffect(() => {
     fetchBudgets();
-    financialHealthApi.get().then(setHealth).catch(() => setHealth(null));
+    financialHealthApi
+      .get()
+      .then(setHealth)
+      .catch(() => setHealth(null));
   }, [fetchBudgets]);
 
   return (
@@ -64,17 +72,26 @@ export default function DashboardPage() {
           />
           <div className="min-w-0">
             <p className="mb-1.5 flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.16em] text-foreground/55">
-              <Sparkles className="h-3.5 w-3.5 text-brand-lime [filter:drop-shadow(0_0_0.5px_#151515)]" /> Money check-in
+              <Sparkles className="h-3.5 w-3.5 text-brand-lime [filter:drop-shadow(0_0_0.5px_#151515)]" />{" "}
+              Money check-in
             </p>
             <h2 className="truncate text-3xl font-black tracking-[-0.025em] text-foreground sm:text-4xl">
               Halo, {user?.name?.split(" ")[0] ?? "teman"}!
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ledger aktif: {activeAccount?.name ?? "memuat pocket…"}{activeAccount?.ownership === "shared" ? ` · Shared · ${activeAccount.role}` : ""}.
+              Ledger aktif: {activeAccount?.name ?? "memuat pocket…"}
+              {activeAccount?.ownership === "shared"
+                ? ` · Shared · ${activeAccount.role}`
+                : ""}
+              .
             </p>
           </div>
         </div>
-        <Link href="/transactions" className="hidden sm:inline-flex" aria-disabled={activeAccount?.role === "viewer"}>
+        <Link
+          href="/transactions"
+          className="hidden sm:inline-flex"
+          aria-disabled={activeAccount?.role === "viewer"}
+        >
           <Button disabled={!activeAccount || activeAccount.role === "viewer"}>
             <Plus className="h-4 w-4" /> Tambah transaksi
           </Button>
@@ -84,10 +101,19 @@ export default function DashboardPage() {
       <div className="motion-stagger grid gap-5 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <BalanceHero
-            balance={fmt(activeAccount ? (activeAccount.type === "credit_card" ? -Math.abs(ledgerBalance) : ledgerBalance) : summary.totalBalance)}
+            balance={fmt(
+              activeAccount
+                ? activeAccount.type === "credit_card"
+                  ? -Math.abs(ledgerBalance)
+                  : ledgerBalance
+                : summary.totalBalance,
+            )}
             transactionCount={summary.transactionCount}
           />
-          <p className="mt-2 text-xs text-muted-foreground">Saldo dan metrik hanya berasal dari active pocket. Ganti pocket melalui navbar untuk melihat ledger lain.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Saldo dan metrik hanya berasal dari active pocket. Ganti pocket
+            melalui navbar untuk melihat ledger lain.
+          </p>
         </div>
 
         <div className="motion-stagger grid gap-5 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-1">
@@ -111,17 +137,27 @@ export default function DashboardPage() {
       {health?.enabled && (
         <Link href="/financial-health" className="block">
           <Card className="neo-cutout interactive-lift border-brand-navy/15">
-            <CardContent className="flex items-center justify-between gap-4 p-5">
-              <div className="flex items-center gap-3">
-                <span className="rounded-2xl bg-brand-lime p-3 text-brand-navy"><Activity className="h-5 w-5" /></span>
-                <div>
-                  <p className="font-black">Financial Health</p>
-                  <p className="text-sm text-muted-foreground">Lihat faktor pembentuk skor dan langkah yang bisa dicoba.</p>
-                </div>
+            <CardContent className="grid min-h-28 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-4 sm:p-6">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-lime text-brand-navy">
+                <Activity className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 self-center">
+                <p className="font-black leading-tight">Financial Health</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Lihat faktor pembentuk skor dan langkah yang bisa dicoba.
+                </p>
               </div>
-              <div className="shrink-0 text-right">
-                <p className="text-2xl font-black">{health.score ?? "—"}</p>
-                <p className="text-xs text-muted-foreground">{health.score == null ? "Belum cukup data" : health.comparison?.change == null ? "dari 100" : `${health.comparison.change > 0 ? "+" : ""}${health.comparison.change} vs lalu`}</p>
+              <div className="col-span-2 flex items-baseline justify-between rounded-xl bg-muted/55 px-4 py-3 sm:col-span-1 sm:block sm:min-w-24 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right">
+                <p className="display-number text-2xl font-black leading-none">
+                  {health.score ?? "—"}
+                </p>
+                <p className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
+                  {health.score == null
+                    ? "Belum cukup data"
+                    : health.comparison?.change == null
+                      ? "dari 100"
+                      : `${health.comparison.change > 0 ? "+" : ""}${health.comparison.change} vs lalu`}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -134,7 +170,9 @@ export default function DashboardPage() {
             <p className="w-fit rounded-full bg-brand-lime px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-brand-navy">
               Arus kas
             </p>
-            <CardTitle className="text-xl font-black tracking-[-0.025em]">Uangmu bergerak ke mana?</CardTitle>
+            <CardTitle className="text-xl font-black tracking-[-0.025em]">
+              Uangmu bergerak ke mana?
+            </CardTitle>
             <p className="text-sm text-muted-foreground">
               Perbandingan pemasukan dan pengeluaran enam bulan terakhir.
             </p>
@@ -148,7 +186,9 @@ export default function DashboardPage() {
             <p className="w-fit rounded-full bg-brand-navy px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-brand-lime">
               Peta pengeluaran
             </p>
-            <CardTitle className="text-xl font-black tracking-[-0.025em]">Si paling boros bulan ini</CardTitle>
+            <CardTitle className="text-xl font-black tracking-[-0.025em]">
+              Si paling boros bulan ini
+            </CardTitle>
             <p className="text-sm text-muted-foreground">
               Tenang, tahu polanya adalah langkah pertama.
             </p>
@@ -162,7 +202,9 @@ export default function DashboardPage() {
       {budgets.length > 0 && (
         <Card className="neo-cutout interactive-lift overflow-hidden border-brand-navy/15">
           <CardHeader>
-            <CardTitle className="text-xl font-black tracking-[-0.025em]">Budget bulan ini</CardTitle>
+            <CardTitle className="text-xl font-black tracking-[-0.025em]">
+              Budget bulan ini
+            </CardTitle>
             <p className="text-sm text-muted-foreground">
               Sedikit pagar supaya rencana tetap di jalurnya.
             </p>
@@ -179,7 +221,9 @@ export default function DashboardPage() {
             <p className="text-xs font-black uppercase tracking-[0.14em] text-foreground/55">
               Ledger terbaru
             </p>
-            <CardTitle className="mt-1 text-xl font-black tracking-[-0.025em]">Jejak uang terakhir</CardTitle>
+            <CardTitle className="mt-1 text-xl font-black tracking-[-0.025em]">
+              Jejak uang terakhir
+            </CardTitle>
           </div>
           <Link
             href="/transactions"
