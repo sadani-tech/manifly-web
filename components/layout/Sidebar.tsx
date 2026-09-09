@@ -7,6 +7,7 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  Crown,
   HandCoins,
   HeartPulse,
   LayoutDashboard,
@@ -44,6 +45,7 @@ const ICONS: Record<string, LucideIcon> = {
   Users,
   WalletCards,
   WandSparkles,
+  Crown,
 };
 
 export const Sidebar: React.FC = () => {
@@ -112,9 +114,21 @@ export const Sidebar: React.FC = () => {
             {SETTINGS_ITEMS.map((item) => {
               const Icon = ICONS[item.icon];
               const active = pathname === item.href;
-              return <Link key={item.href} href={item.href} className={cn("flex items-center gap-2 rounded-lg px-2 py-2 text-xs transition-colors", active ? "bg-white/15 text-white" : "text-white/55 hover:bg-white/10 hover:text-white")}>
-                {Icon ? <Icon className="h-3.5 w-3.5" /> : null}{item.label}
-              </Link>;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-2 py-2 text-xs transition-colors",
+                    active
+                      ? "bg-white/15 text-white"
+                      : "text-white/55 hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
+                  {item.label}
+                </Link>
+              );
             })}
           </div>
         )}

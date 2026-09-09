@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandMark } from "@/components/shared/Logo";
 
 interface FlowBuddyProps {
   size?: "sm" | "md";
@@ -19,6 +20,7 @@ export const FlowBuddy: React.FC<FlowBuddyProps> = ({
     aria-label={label}
     role={label ? "img" : undefined}
   >
+    <BrandMark size={size === "sm" ? 28 : 38} decorative />
     <Sparkles
       className={cn(
         "absolute -right-1 -top-1 text-brand-navy drop-shadow-sm",

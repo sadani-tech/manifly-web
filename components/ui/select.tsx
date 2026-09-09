@@ -21,6 +21,8 @@ interface SelectProps {
   required?: boolean;
   className?: string;
   buttonClassName?: string;
+  triggerContent?: React.ReactNode;
+  title?: string;
   "aria-label"?: string;
 }
 
@@ -41,6 +43,8 @@ export function Select({
   required = false,
   className,
   buttonClassName,
+  triggerContent,
+  title,
   "aria-label": ariaLabel,
 }: SelectProps) {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -186,53 +190,54 @@ export function Select({
     }
   }
 
-  const menu = open && position ? (
-    <div
-      ref={menuRef}
-      id={listboxId}
-      role="listbox"
-      aria-label={ariaLabel}
-      className="fixed z-[100] overflow-y-auto rounded-xl border border-border bg-popover/98 p-1.5 text-popover-foreground shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl"
-      style={{
-        left: position.left,
-        top: position.top,
-        width: position.width,
-        maxHeight: position.maxHeight,
-      }}
-    >
-      {options.map((option, index) => {
-        const active = option.value === stringValue;
-        const focused = index === highlighted;
-        return (
-          <button
-            key={`${option.value}-${index}`}
-            id={`${listboxId}-option-${index}`}
-            type="button"
-            role="option"
-            aria-selected={active}
-            disabled={option.disabled}
-            data-option-index={index}
-            onPointerMove={() => !option.disabled && setHighlighted(index)}
-            onClick={() => choose(option)}
-            className={cn(
-              "flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-              focused && "bg-accent text-accent-foreground",
-              active && "font-semibold text-foreground",
-              option.disabled && "cursor-not-allowed opacity-45",
-            )}
-          >
-            <span className="min-w-0 flex-1 truncate">{option.label}</span>
-            <Check
+  const menu =
+    open && position ? (
+      <div
+        ref={menuRef}
+        id={listboxId}
+        role="listbox"
+        aria-label={ariaLabel}
+        className="fixed z-[100] overflow-y-auto rounded-xl border border-border bg-popover/98 p-1.5 text-popover-foreground shadow-[0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+        style={{
+          left: position.left,
+          top: position.top,
+          width: position.width,
+          maxHeight: position.maxHeight,
+        }}
+      >
+        {options.map((option, index) => {
+          const active = option.value === stringValue;
+          const focused = index === highlighted;
+          return (
+            <button
+              key={`${option.value}-${index}`}
+              id={`${listboxId}-option-${index}`}
+              type="button"
+              role="option"
+              aria-selected={active}
+              disabled={option.disabled}
+              data-option-index={index}
+              onPointerMove={() => !option.disabled && setHighlighted(index)}
+              onClick={() => choose(option)}
               className={cn(
-                "h-4 w-4 shrink-0 text-primary transition-opacity",
-                active ? "opacity-100" : "opacity-0",
+                "flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                focused && "bg-accent text-accent-foreground",
+                active && "font-semibold text-foreground",
+                option.disabled && "cursor-not-allowed opacity-45",
               )}
-            />
-          </button>
-        );
-      })}
-    </div>
-  ) : null;
+            >
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              <Check
+                className={cn(
+                  "h-4 w-4 shrink-0 text-primary transition-opacity",
+                  active ? "opacity-100" : "opacity-0",
+                )}
+              />
+            </button>
+          );
+        })}
+      </div>
+    ) : null;
 
   return (
     <div className={cn("relative min-w-0", className)}>
@@ -251,6 +256,7 @@ export function Select({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-required={required || undefined}
+        title={title}
         disabled={disabled}
         onClick={() => setOpen((current) => !current)}
         onKeyDown={handleKeyDown}
@@ -268,7 +274,7 @@ export function Select({
             !selected && "text-muted-foreground",
           )}
         >
-          {selected?.label ?? placeholder}
+          {triggerContent ?? selected?.label ?? placeholder}
         </span>
         <ChevronDown
           className={cn(
