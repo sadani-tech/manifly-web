@@ -33,14 +33,14 @@ export interface ShareSession {
 }
 
 interface GlobalWithStore {
-  __moneyFlowShareSessions__?: Map<string, ShareSession>;
+  __maniflyShareSessions__?: Map<string, ShareSession>;
 }
 
 // Reuse the same Map across hot-reload / route invocations within a process.
 const globalRef = globalThis as unknown as GlobalWithStore;
 const sessions: Map<string, ShareSession> =
-  globalRef.__moneyFlowShareSessions__ ?? new Map<string, ShareSession>();
-globalRef.__moneyFlowShareSessions__ = sessions;
+  globalRef.__maniflyShareSessions__ ?? new Map<string, ShareSession>();
+globalRef.__maniflyShareSessions__ = sessions;
 
 function sweepExpired(now: number): void {
   for (const [id, session] of sessions) {

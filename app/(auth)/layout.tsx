@@ -5,13 +5,13 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { FlowBuddy } from "@/components/shared/FlowBuddy";
+import { BrandMark } from "@/components/shared/Logo";
 
 export const metadata: Metadata = {
-  // `absolute` bypasses the root layout's "%s · Money Flow" template, which
-  // would otherwise render "Money Flow · Money Flow" on the auth pages.
+  // `absolute` bypasses the root layout's "%s · Manifly" template, which
+  // would otherwise render "Manifly · Manifly" on the auth pages.
   // These pages are client components, so the title must live on this layout.
-  title: { absolute: "Money Flow" },
+  title: { absolute: "Manifly" },
 };
 
 const highlights = [
@@ -31,10 +31,10 @@ export default function AuthLayout({
         <aside className="hero-vault relative hidden overflow-hidden p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="hero-vault-content">
             <div className="flex items-center gap-3">
-              <FlowBuddy />
+              <BrandMark size={44} decorative />
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-brand-lime">
-                  MoneyFlow
+                  Manifly
                 </p>
                 <p className="text-sm text-white/80">
                   Teman uang yang nggak menghakimi

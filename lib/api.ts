@@ -349,7 +349,7 @@ export async function syncOfflineTransactions(): Promise<number> {
     }
   }
   if (synced && typeof window !== "undefined")
-    window.dispatchEvent(new CustomEvent("moneyflow:offline-synced"));
+    window.dispatchEvent(new CustomEvent("manifly:offline-synced"));
   return synced;
 }
 

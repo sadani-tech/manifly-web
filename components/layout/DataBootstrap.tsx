@@ -38,16 +38,16 @@ export const DataBootstrap: React.FC = () => {
     const onOffline = () => setOnline(false);
     window.addEventListener('online', sync);
     window.addEventListener('offline', onOffline);
-    window.addEventListener('moneyflow:offline-synced', refresh);
-    window.addEventListener('moneyflow:offline-queue-changed', refresh);
+    window.addEventListener('manifly:offline-synced', refresh);
+    window.addEventListener('manifly:offline-queue-changed', refresh);
     void sync();
     return () => {
       disposed = true;
       if (retryTimer) clearTimeout(retryTimer);
       window.removeEventListener('online', sync);
       window.removeEventListener('offline', onOffline);
-      window.removeEventListener('moneyflow:offline-synced', refresh);
-      window.removeEventListener('moneyflow:offline-queue-changed', refresh);
+      window.removeEventListener('manifly:offline-synced', refresh);
+      window.removeEventListener('manifly:offline-queue-changed', refresh);
     };
   }, [fetchTransactions]);
 

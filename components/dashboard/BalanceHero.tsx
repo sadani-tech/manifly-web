@@ -27,7 +27,7 @@ export const BalanceHero: React.FC<BalanceHeroProps> = ({
           </span>
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand-lime">
-              MoneyFlow card
+              Manifly card
             </p>
             <p className="text-xs text-white/55">Personal wallet</p>
           </div>

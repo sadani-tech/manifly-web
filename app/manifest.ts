@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 /**
- * Web App Manifest for Money Flow.
+ * Web App Manifest for Manifly.
  *
  * Served at `/manifest.webmanifest` by Next.js (App Router metadata convention).
  * The browser uses this file to enable "Add to Home Screen" / installability.
@@ -40,8 +40,8 @@ type ManifestWithShareTarget = MetadataRoute.Manifest & {
 
 export default function manifest(): ManifestWithShareTarget {
   return {
-    name: "Money Flow",
-    short_name: "MoneyFlow",
+    name: "Manifly",
+    short_name: "Manifly",
     description: "Pelacak keuangan pribadi",
     start_url: "/dashboard",
     scope: "/",

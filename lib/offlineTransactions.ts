@@ -9,7 +9,7 @@ export interface OfflineMutation {
   createdAt: number;
 }
 
-const DB_NAME = 'money-flow-offline';
+const DB_NAME = 'manifly-offline';
 const DB_VERSION = 1;
 const QUEUE = 'mutation-queue';
 const CACHE = 'transaction-cache';
@@ -50,7 +50,7 @@ export const getCachedTransactions = async (): Promise<ApiTransaction[]> =>
 
 export const queueMutation = async (mutation: OfflineMutation) => {
   const result = await withStore(QUEUE, 'readwrite', (store) => store.put(mutation));
-  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('moneyflow:offline-queue-changed'));
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('manifly:offline-queue-changed'));
   return result;
 };
 
@@ -61,7 +61,7 @@ export const listMutations = async (): Promise<OfflineMutation[]> => {
 
 export const removeMutation = async (id: string) => {
   await withStore(QUEUE, 'readwrite', (store) => store.delete(id));
-  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('moneyflow:offline-queue-changed'));
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('manifly:offline-queue-changed'));
 };
 
 export async function updateQueuedCreate(clientMutationId: string, patch: Record<string, unknown>) {

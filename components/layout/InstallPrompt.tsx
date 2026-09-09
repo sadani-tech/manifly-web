@@ -18,7 +18,7 @@ interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
 }
 
-const DISMISS_KEY = "money-flow:install-dismissed";
+const DISMISS_KEY = "manifly:install-dismissed";
 
 // Lazy initial-state readers keep us off the React-19 "no setState in effect"
 // rule (the index already records this preference for `useLocalStorage`-style
@@ -88,7 +88,7 @@ export const InstallPrompt: React.FC = () => {
   return (
     <div
       role="dialog"
-      aria-label="Install Money Flow"
+      aria-label="Install Manifly"
       className="neo-sticker fixed inset-x-3 z-40 rounded-[1.55rem] bg-brand-navy text-white shadow-[0_16px_42px_rgba(0,0,0,.28)] bottom-[calc(env(safe-area-inset-bottom)+76px)] md:inset-x-auto md:right-6 md:bottom-6 md:max-w-sm"
     >
       <div className="flex items-center gap-3 p-3">
@@ -96,7 +96,7 @@ export const InstallPrompt: React.FC = () => {
           <Download className="h-4.5 w-4.5" aria-hidden />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold">Install MoneyFlow</p>
+          <p className="text-sm font-bold">Install Manifly</p>
           <p className="mt-0.5 hidden text-xs text-white/55 sm:block">
             Add to your home screen for offline access and a full-screen experience.
           </p>

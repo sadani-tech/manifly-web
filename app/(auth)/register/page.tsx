@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Wallet, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { authApi, ApiError } from "@/lib/api";
+import { BrandMark } from "@/components/shared/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -38,10 +39,8 @@ export default function RegisterPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="flex flex-col items-center gap-2 mb-8">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Wallet className="h-6 w-6" />
-        </div>
-        <h1 className="text-2xl font-bold">Money Flow</h1>
+        <BrandMark size={52} decorative />
+        <h1 className="text-2xl font-bold">Manifly</h1>
         <p className="text-sm text-muted-foreground">Buat akun baru</p>
       </div>
 

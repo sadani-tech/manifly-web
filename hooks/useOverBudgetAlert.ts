@@ -9,7 +9,7 @@ import { format } from "date-fns";
 /**
  * Monitors spending vs budgets and fires a push notification when any category
  * exceeds its monthly budget limit. Requires the budget feature to be present
- * (moneyflow/feat-budget merged). Runs on every transaction-store update.
+ * (manifly/feat-budget merged). Runs on every transaction-store update.
  */
 export function useOverBudgetAlert(
   budgets: Array<{ id: string; categoryId: string; amount: number; month: string; category?: { name: string } }>,

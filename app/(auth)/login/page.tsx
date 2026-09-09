@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Wallet, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { authApi, ApiError } from "@/lib/api";
+import { BrandMark } from "@/components/shared/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,17 +35,15 @@ export default function LoginPage() {
   return (
     <div className="min-w-0 w-full max-w-sm">
       <div className="mb-8 flex flex-col items-center gap-2 lg:items-start">
-        <div className="neo-sticker flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-lime text-brand-navy lg:hidden">
-          <Wallet className="h-6 w-6" />
-        </div>
+        <BrandMark size={52} decorative className="lg:hidden" />
         <p className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-primary lg:block">
           Selamat datang kembali
         </p>
         <h1 className="text-2xl font-bold tracking-[-0.025em] sm:text-3xl">
-          Masuk ke MoneyFlow
+          Masuk ke Manifly
         </h1>
         <p className="text-center text-sm text-muted-foreground lg:text-left">
-          Flow sudah menunggu. Dompetmu juga. (• ᴗ •)
+          Bersiap untuk terbang bersama uangmu. (• ᴗ •)
         </p>
       </div>
 

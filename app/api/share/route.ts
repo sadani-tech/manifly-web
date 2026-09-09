@@ -5,7 +5,7 @@ import { newSessionId, putSession } from "@/lib/shareSessionStore";
  * Web Share Target endpoint.
  *
  * Registered in `app/manifest.ts` as the `share_target.action`. When a user
- * shares an image / PDF to the installed Money Flow PWA, the OS POSTs a
+ * shares an image / PDF to the installed Manifly PWA, the OS POSTs a
  * multipart form here with the file attached as `file` plus optional
  * `title`/`text`/`url` text params.
  *

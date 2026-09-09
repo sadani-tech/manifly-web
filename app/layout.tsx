@@ -5,7 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 
-const APP_NAME = "Money Flow";
+const APP_NAME = "Manifly";
 const APP_DESCRIPTION =
   "Track income and expenses, categorize transactions, view analytics, and export your financial data.";
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   applicationName: APP_NAME,
   appleWebApp: {
     capable: true,
-    title: "MoneyFlow",
+    title: "Manifly",
     statusBarStyle: "default",
   },
   formatDetection: { telephone: false },

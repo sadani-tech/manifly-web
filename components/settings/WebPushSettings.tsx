@@ -52,7 +52,7 @@ export function WebPushSettings() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><BellRing className="h-4 w-4" /> Background Web Push</CardTitle>
-        <CardDescription>Reminder dikirim server walaupun Money Flow sedang tidak dibuka.</CardDescription>
+        <CardDescription>Reminder dikirim server walaupun Manifly sedang tidak dibuka.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <label className="flex items-center justify-between gap-4 text-sm">

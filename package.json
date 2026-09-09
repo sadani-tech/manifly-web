@@ -1,5 +1,5 @@
 {
-  "name": "@money-flow/web",
+  "name": "@manifly/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "brand": "node scripts/build-brand.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

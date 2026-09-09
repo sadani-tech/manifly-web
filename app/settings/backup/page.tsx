@@ -37,7 +37,7 @@ export default function BackupPage() {
       const date = new Date().toISOString().slice(0, 10);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `money-flow-backup-${date}.json`;
+      a.download = `manifly-backup-${date}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
