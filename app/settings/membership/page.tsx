@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  BadgePlus,
   Check,
   Clock3,
   Crown,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import {
   membershipApi,
+  type MembershipAddonSummary,
   type MembershipPlanSummary,
   type MembershipSnapshot,
   type MembershipUsage,
@@ -42,9 +44,19 @@ function formatEntitlement(key: string, value: number) {
   return value.toLocaleString("id-ID");
 }
 
+function formatPrice(value: number, currency: string) {
+  if (value === 0) return "Gratis";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 export default function MembershipPage() {
   const [membership, setMembership] = useState<MembershipSnapshot | null>(null);
   const [plans, setPlans] = useState<MembershipPlanSummary[]>([]);
+  const [addons, setAddons] = useState<MembershipAddonSummary[]>([]);
   const [usage, setUsage] = useState<MembershipUsage[]>([]);
   const [loading, setLoading] = useState(true);
   const [numberRequirement, setNumberRequirement] = useState<number | null>(
@@ -63,11 +75,13 @@ export default function MembershipPage() {
     Promise.all([
       membershipApi.get(),
       membershipApi.plans(),
+      membershipApi.addons(),
       membershipApi.usage(),
     ])
-      .then(([current, availablePlans, currentUsage]) => {
+      .then(([current, availablePlans, availableAddons, currentUsage]) => {
         setMembership(current);
         setPlans(availablePlans);
+        setAddons(availableAddons);
         setUsage(currentUsage);
       })
       .catch(() =>
@@ -116,8 +130,9 @@ export default function MembershipPage() {
               Kamu membutuhkan {numberRequirement} nomor WhatsApp
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Plan {recommendedPlan?.name ?? "berikutnya"} menyediakan slot yang
-              dibutuhkan. Nomor yang sudah terhubung tetap aman.
+              Tambahkan add-on nomor pada plan aktif atau pilih plan{" "}
+              {recommendedPlan?.name ?? "berikutnya"}. Nomor yang sudah
+              terhubung tetap aman.
             </p>
           </div>
           <Link
@@ -140,10 +155,10 @@ export default function MembershipPage() {
 
       {loading ? (
         <div
-          className="grid gap-4 md:grid-cols-3"
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
           aria-label="Memuat membership"
         >
-          {[0, 1, 2].map((item) => (
+          {[0, 1, 2, 3].map((item) => (
             <div
               key={item}
               className="h-80 animate-pulse rounded-[1.65rem] bg-muted"
@@ -151,7 +166,7 @@ export default function MembershipPage() {
           ))}
         </div>
       ) : (
-        <div className="grid items-stretch gap-4 md:grid-cols-3">
+        <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {plans.map((plan) => {
             const active = membership?.plan.code === plan.code;
             const recommended = recommendedPlan?.code === plan.code && !active;
@@ -179,10 +194,20 @@ export default function MembershipPage() {
                   </span>
                 )}
                 <h2 className="pr-24 text-2xl font-black">{plan.name}</h2>
+                <p className="mt-2 text-xl font-black text-foreground">
+                  {formatPrice(plan.priceMonthly, plan.currency)}
+                  {plan.priceMonthly > 0 && (
+                    <span className="text-xs font-medium text-muted-foreground">
+                      /bulan
+                    </span>
+                  )}
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {plan.code === "free"
                     ? "Mulai mencatat lewat WhatsApp."
-                    : "Kapasitas lebih besar untuk aktivitasmu."}
+                    : plan.code === "lite"
+                      ? "Lebih banyak chat untuk kebutuhan personal."
+                      : "Kapasitas lebih besar untuk aktivitasmu."}
                 </p>
                 <div className="my-5 h-px bg-border" />
                 <ul className="flex-1 space-y-3">
@@ -218,6 +243,87 @@ export default function MembershipPage() {
             );
           })}
         </div>
+      )}
+
+      {!loading && addons.length > 0 && (
+        <section className="mf-card rounded-[1.65rem] border bg-card p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-lime/30 text-brand-navy dark:text-brand-lime">
+              <BadgePlus className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-black">Add-on plan aktif</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Tambah kapasitas nomor tanpa mengganti plan. Total nomor tetap
+                mengikuti batas platform.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            {addons.map((addon) => {
+              const activeAddon = membership?.addons?.find(
+                (item) => item.code === addon.code,
+              );
+              const baseLimit = plans.find(
+                (plan) => plan.code === membership?.plan.code,
+              )?.entitlements[addon.entitlementKey] ?? 0;
+              const maximumQuantity = addon.platformLimit
+                ? Math.max(
+                    0,
+                    Math.floor(
+                      (addon.platformLimit - baseLimit) /
+                        addon.entitlementIncrement,
+                    ),
+                  )
+                : null;
+              const availableQuantity =
+                maximumQuantity === null
+                  ? null
+                  : Math.max(0, maximumQuantity - (activeAddon?.quantity ?? 0));
+              return (
+                <article
+                  key={addon.code}
+                  className="rounded-2xl border bg-muted/35 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold">{addon.name}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        +{addon.entitlementIncrement} nomor aktif per unit
+                      </p>
+                    </div>
+                    <p className="text-right font-black">
+                      {formatPrice(addon.priceMonthly, addon.currency)}
+                      <span className="block text-[10px] font-medium text-muted-foreground">
+                        /nomor/bulan
+                      </span>
+                    </p>
+                  </div>
+                  {activeAddon && (
+                    <p className="mt-3 rounded-lg bg-brand-lime/20 px-3 py-2 text-xs font-semibold">
+                      Aktif: {activeAddon.quantity} nomor tambahan
+                    </p>
+                  )}
+                  {availableQuantity !== null && (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Tersedia {availableQuantity} unit lagi untuk plan aktif.
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-4 flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border bg-muted/70 text-sm font-bold text-muted-foreground opacity-80"
+                  >
+                    <LockKeyhole className="h-4 w-4" />
+                    {availableQuantity === 0
+                      ? "Batas 3 nomor tercapai"
+                      : "Pembayaran belum tersedia"}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {membership && (
