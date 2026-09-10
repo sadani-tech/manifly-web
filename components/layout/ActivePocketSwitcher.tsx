@@ -14,14 +14,27 @@ export function ActivePocketSwitcher() {
   const active = available.find((account) => account.id === activeAccountId);
 
   return (
-    <div className="flex shrink-0 items-center">
+    <div className="flex min-w-0 shrink-0 items-center">
       <Select
         aria-label={`Pocket aktif${active ? `: ${active.name}` : ""}`}
         title={active ? `Pocket aktif: ${active.name}` : "Pilih pocket aktif"}
-        className="w-11"
-        buttonClassName="h-10 w-11 justify-center border-brand-navy/15 bg-card px-0 [&>svg]:ml-0"
+        className="w-11 sm:w-44 lg:w-52"
+        buttonClassName="h-10 w-full justify-center border-brand-navy/15 bg-card px-0 sm:justify-start sm:px-2.5 [&>svg]:ml-0 sm:[&>svg]:ml-2"
+        menuMinWidth={260}
         triggerContent={
-          <WalletCards className="h-4 w-4 text-brand-navy dark:text-brand-lime" />
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-lime/45 text-brand-navy dark:bg-brand-lime/15 dark:text-brand-lime">
+              <WalletCards className="h-4 w-4" />
+            </span>
+            <span className="hidden min-w-0 text-left sm:block">
+              <span className="block text-[9px] font-bold uppercase leading-none tracking-[0.12em] text-muted-foreground">
+                Pocket aktif
+              </span>
+              <span className="mt-1 block truncate text-xs font-semibold leading-none text-foreground">
+                {loading ? "Memuat pocket…" : active?.name ?? "Pilih pocket"}
+              </span>
+            </span>
+          </span>
         }
         value={activeAccountId ?? ""}
         disabled={loading || available.length === 0}
@@ -38,16 +51,20 @@ export function ActivePocketSwitcher() {
         options={available.map((account) => ({
           value: account.id,
           label: (
-            <span className="flex min-w-0 items-center gap-1.5">
+            <span className="flex min-w-0 items-center gap-2">
               {account.role === "viewer" ? (
-                <Eye className="h-3.5 w-3.5 shrink-0" />
+                <Eye className="h-4 w-4 shrink-0 text-muted-foreground" />
               ) : null}
-              <span className="truncate">{account.name}</span>
-              <span className="shrink-0 text-[10px] text-muted-foreground">
-                {account.currency}
-                {account.ownership === "shared"
-                  ? ` · Shared · ${account.role}`
-                  : " · Milikmu"}
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">
+                  {account.name}
+                </span>
+                <span className="block truncate text-[10px] font-normal text-muted-foreground">
+                  {account.currency}
+                  {account.ownership === "shared"
+                    ? ` · Shared · ${account.role}`
+                    : " · Milikmu"}
+                </span>
               </span>
             </span>
           ),

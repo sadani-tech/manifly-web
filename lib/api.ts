@@ -412,11 +412,34 @@ export interface MembershipUsage {
 }
 
 export interface MembershipPlanSummary {
-  code: "free" | "plus" | "pro";
+  code: "free" | "lite" | "plus" | "pro";
   name: string;
   version: number;
+  priceMonthly: number;
+  currency: string;
   entitlements: Record<string, number>;
   pricingNotice: string;
+}
+
+export interface MembershipAddonSummary {
+  code: "whatsapp-number";
+  name: string;
+  version: number;
+  entitlementKey: string;
+  entitlementIncrement: number;
+  priceMonthly: number;
+  currency: string;
+  platformLimit: number | null;
+}
+
+export interface ActiveMembershipAddon {
+  code: MembershipAddonSummary["code"];
+  name: string;
+  quantity: number;
+  entitlementKey: string;
+  entitlementIncrement: number;
+  priceMonthly: number;
+  currency: string;
 }
 
 export interface MembershipSnapshot {
@@ -426,13 +449,20 @@ export interface MembershipSnapshot {
   periodEnd: string;
   resetAt: string;
   entitlements: Record<string, number>;
+  addons: ActiveMembershipAddon[];
   pricingNotice: string;
 }
 
 export const membershipApi = {
   get: () => request<MembershipSnapshot>("/membership"),
   plans: () => request<MembershipPlanSummary[]>("/membership/plans"),
+  addons: () => request<MembershipAddonSummary[]>("/membership/addons"),
   usage: () => request<MembershipUsage[]>("/membership/usage"),
+  updateAddon: (code: MembershipAddonSummary["code"], quantity: number) =>
+    request<MembershipSnapshot>(`/membership/addons/${code}`, {
+      method: "PUT",
+      body: JSON.stringify({ quantity }),
+    }),
 };
 
 // ── Backup ────────────────────────────────────────────────────────────────────
