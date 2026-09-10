@@ -22,6 +22,7 @@ interface SelectProps {
   className?: string;
   buttonClassName?: string;
   triggerContent?: React.ReactNode;
+  menuMinWidth?: number;
   title?: string;
   "aria-label"?: string;
 }
@@ -44,6 +45,7 @@ export function Select({
   className,
   buttonClassName,
   triggerContent,
+  menuMinWidth = 180,
   title,
   "aria-label": ariaLabel,
 }: SelectProps) {
@@ -80,7 +82,10 @@ export function Select({
       spaceBelow < Math.min(preferredHeight, 180) && spaceAbove > spaceBelow;
     const available = openAbove ? spaceAbove : spaceBelow;
     const maxHeight = Math.max(96, Math.min(preferredHeight, available - gap));
-    const width = Math.max(rect.width, 180);
+    const width = Math.min(
+      Math.max(rect.width, menuMinWidth),
+      window.innerWidth - viewportPadding * 2,
+    );
     const left = Math.min(
       Math.max(viewportPadding, rect.left),
       window.innerWidth - width - viewportPadding,
@@ -94,7 +99,7 @@ export function Select({
       width,
       maxHeight,
     });
-  }, [options.length]);
+  }, [menuMinWidth, options.length]);
 
   React.useLayoutEffect(() => {
     if (!open) return;
