@@ -80,27 +80,27 @@ export default function manifest(): ManifestWithShareTarget {
     ],
     shortcuts: [
       {
-        name: "Add transaction",
-        short_name: "Add",
-        description: "Jump straight to the transactions page to log income or expense",
+        name: "Tambah transaksi",
+        short_name: "Tambah",
+        description: "Catat uang masuk atau keluar dengan cepat",
         url: "/transactions",
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
         ],
       },
       {
-        name: "Scan receipt",
-        short_name: "Scan",
-        description: "Open the receipt scanner to import a transaction from a photo",
+        name: "Pindai struk",
+        short_name: "Pindai",
+        description: "Ubah foto struk menjadi catatan transaksi",
         url: "/import",
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
         ],
       },
       {
-        name: "Analytics",
-        short_name: "Analytics",
-        description: "Open spending analytics and trends",
+        name: "Analitik",
+        short_name: "Analitik",
+        description: "Lihat arah pengeluaran dan tren uangmu",
         url: "/analytics",
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

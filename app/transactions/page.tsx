@@ -89,13 +89,13 @@ export default function TransactionsPage() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.15em] text-kicker">
-            <Sparkles className="h-3.5 w-3.5" /> Ledger harian
+            <Sparkles className="h-3.5 w-3.5" /> Jejak uang harian
           </p>
           <h2 className="text-2xl font-bold tracking-[-0.025em] sm:text-3xl">
             Transaksi
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ledger {activeAccount?.name ?? "active pocket"}{activeAccount?.role === "viewer" ? " · mode viewer" : ""}.
+            Catatan dari Pocket {activeAccount?.name ?? "aktif"}{activeAccount?.role === "viewer" ? " · hanya lihat" : ""}.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

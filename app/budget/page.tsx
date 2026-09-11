@@ -172,7 +172,7 @@ export default function BudgetPage() {
             <Sparkles className="h-3.5 w-3.5" /> Rencana yang ramah
           </p>
           <h1 className="text-2xl font-bold tracking-[-0.025em] sm:text-3xl">
-            Budget
+            Rencana uang
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Beri uangmu arah, tanpa bikin hidup terasa sempit.
@@ -219,7 +219,7 @@ export default function BudgetPage() {
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors sm:flex-none"
           >
             <Plus className="h-4 w-4" />
-            Set Budget
+            Buat rencana
           </button>
         </div>
       </div>
@@ -231,7 +231,7 @@ export default function BudgetPage() {
           className="mf-card page-enter space-y-3 rounded-2xl border border-border bg-card p-5"
         >
           <h3 className="font-semibold">
-            {editBudget ? "Edit Budget" : "Set Budget Kategori"}
+            {editBudget ? "Ubah rencana" : "Buat rencana per kategori"}
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -299,7 +299,7 @@ export default function BudgetPage() {
             Dompet kecilnya masih santai.
           </p>
           <p className="mt-1 text-sm">
-            Belum ada budget untuk {monthLabel}. Yuk beri dia arah.
+            Belum ada rencana untuk {monthLabel}. Yuk beri uangmu arah.
           </p>
         </div>
       ) : (
@@ -332,14 +332,14 @@ export default function BudgetPage() {
                     </span>
                     <button
                       onClick={() => openEdit(b)}
-                      aria-label="Edit budget"
+                      aria-label="Ubah rencana"
                       className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => deleteBudget(b.id)}
-                      aria-label="Hapus budget"
+                      aria-label="Hapus rencana"
                       className="inline-flex h-9 w-9 items-center justify-center rounded hover:bg-destructive/10 text-destructive transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />

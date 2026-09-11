@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
             Analitik
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Biar grafik yang cerita—kamu tinggal ambil keputusan.
+            Lihat pengeluaran yang paling sering membuat uang pergi tanpa terasa.
           </p>
         </div>
         <div className="space-y-1.5">
@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
           </p>
           <CardTitle>Tren pemasukan & pengeluaran</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Dua aliran, satu gambaran keuangan yang utuh.
+            Lihat kapan uang datang dan ke mana paling banyak pergi.
           </p>
         </CardHeader>
         <CardContent>
