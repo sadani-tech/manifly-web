@@ -141,7 +141,7 @@ export default function MembershipPage() {
           href="/settings"
           className="focus-ring inline-flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm font-semibold hover:bg-muted"
         >
-          <ArrowLeft className="h-4 w-4" /> Settings
+          <ArrowLeft className="h-4 w-4" /> Pengaturan
         </Link>
       </div>
 

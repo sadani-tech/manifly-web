@@ -51,7 +51,7 @@ export default function NotificationSettingsPage() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Bell className="h-6 w-6" />
-          Notification Settings
+          Pengaturan notifikasi
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Configure your daily reminder to log transactions.
@@ -134,10 +134,10 @@ export default function NotificationSettingsPage() {
           <div>
             <Label className="text-base font-semibold flex items-center gap-1.5">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Over-budget Alert
+              Peringatan rencana terlewati
             </Label>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Get notified when spending exceeds a budget limit.
+              Dapatkan kabar saat pengeluaran melewati batas yang kamu buat.
             </p>
           </div>
           <button

@@ -13,11 +13,11 @@ import { PublicChrome } from '@/components/public/PublicChrome';
 import { getPublicCatalog } from '@/lib/public-catalog';
 
 const features = [
-  [MessageCircle, 'Catat lewat WhatsApp', 'Ketik “kopi 15rb” dan transaksi langsung masuk ke ledger yang sama.'],
-  [Mic2, 'Voice note', 'Kirim suara berbahasa Indonesia, cek hasilnya, lalu simpan.'],
-  [Camera, 'Scan struk', 'Ambil foto struk dan review hasil OCR langsung dari perangkat.'],
-  [WalletCards, 'Pocket & transfer', 'Pisahkan kas, bank, e-wallet, dan transfer antar akun tanpa angka ganda.'],
-  [ChartNoAxesCombined, 'Analitik yang jelas', 'Budget, tren, dan kesehatan finansial berasal dari data yang sama.'],
+  [MessageCircle, 'Langsung catat di WhatsApp', 'Ketik “kopi 15rb”, Manifly langsung menangkap pengeluaran itu ke catatanmu.'],
+  [Mic2, 'Cukup bilang, Manifly catat', 'Kirim voice note berbahasa Indonesia, periksa hasilnya, lalu simpan.'],
+  [Camera, 'Struk nggak sempat hilang', 'Foto struk dan Manifly bantu menangkap pengeluarannya sebelum terlupa.'],
+  [WalletCards, 'Uang tetap pada tempatnya', 'Pisahkan kas, bank, dan e-wallet dalam Pocket agar setiap saldo mudah dipantau.'],
+  [ChartNoAxesCombined, 'Tahu ke mana uang pergi', 'Temukan pola pengeluaran, tren, dan kondisi uang dari catatan yang sama.'],
   [ShieldCheck, 'Kamu tetap pegang kendali', 'Ekspor dan hapus data tersedia; Manifly tidak meminta PIN atau OTP bank.'],
 ] as const;
 
@@ -32,12 +32,12 @@ export default async function Home() {
               Personal finance · WhatsApp · PWA
             </span>
             <h1 className="mt-6 max-w-3xl text-5xl font-black leading-[.95] tracking-[-.055em] sm:text-7xl">
-              Uang cepat, <span className="text-[#6b8e23] dark:text-brand-lime">mimpi dekat.</span>
+              Biar uang nggak <span className="text-[#6b8e23] dark:text-brand-lime">asal terbang.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 opacity-70">
-              Catat pemasukan dan pengeluaran lewat WhatsApp, voice note, atau
-              foto struk. Semuanya rapi di dashboard, budget, dan analitik yang
-              sama.
+              Pengeluaran kecil gampang terlewat sampai saldo tiba-tiba menipis.
+              Catat lewat WhatsApp, voice note, atau foto struk, lalu biarkan
+              Manifly menunjukkan ke mana uangmu pergi.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -54,8 +54,8 @@ export default async function Home() {
               </Link>
             </div>
             <p className="mt-5 text-sm opacity-60">
-              Semua fitur finansial web tetap gratis. Membership hanya mengatur
-              entitlement WhatsApp.
+              Semua fitur pengelolaan uang di web tetap gratis. Membership
+              hanya untuk menambah kapasitas layanan WhatsApp.
             </p>
           </div>
           <div className="relative mx-auto w-full max-w-lg rounded-[2.4rem] border-2 border-[#151515] bg-[#151515] p-5 text-white shadow-[12px_12px_0_#c9f45a]">
@@ -91,8 +91,8 @@ export default async function Home() {
 
       <section id="fitur" className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <p className="text-xs font-black uppercase tracking-[.18em] text-kicker">Sudah tersedia</p>
-        <h2 className="mt-3 max-w-2xl text-4xl font-black tracking-[-.04em] sm:text-5xl">
-          Satu tempat dari catat sampai paham.
+          <h2 className="mt-3 max-w-2xl text-4xl font-black tracking-[-.04em] sm:text-5xl">
+          Tangkap setiap pengeluaran sebelum uangmu terbang.
         </h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map(([Icon, title, body]) => (
@@ -109,7 +109,7 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 text-center">
             <p className="text-xs font-black uppercase tracking-[.18em] text-kicker">Harga transparan</p>
-            <h2 className="mt-3 text-4xl font-black tracking-[-.04em]">Web gratis. Bayar sesuai kebutuhan WhatsApp.</h2>
+            <h2 className="mt-3 text-4xl font-black tracking-[-.04em]">Mulai gratis, tambah kapasitas saat kamu membutuhkannya.</h2>
           </div>
           <PricingGrid {...catalog} />
           <div className="mt-8 text-center"><Link href="/pricing" className="font-black underline underline-offset-4">Detail pricing dan kebijakan billing</Link></div>
@@ -118,8 +118,8 @@ export default async function Home() {
 
       <section className="mx-auto max-w-7xl px-4 py-20 text-center sm:px-6">
         <div className="rounded-[2rem] bg-brand-lime px-6 py-14 text-brand-navy">
-          <h2 className="text-4xl font-black tracking-[-.04em]">Siap bikin uang jadi santai?</h2>
-          <p className="mx-auto mt-3 max-w-xl">Daftar, buat pocket pertama, lalu catat transaksi lewat web atau WhatsApp.</p>
+          <h2 className="text-4xl font-black tracking-[-.04em]">Siap tahu ke mana uangmu pergi?</h2>
+          <p className="mx-auto mt-3 max-w-xl">Buat Pocket pertama dan mulai tangkap pengeluaran yang biasanya lolos tanpa terasa.</p>
           <Link href="/register" className="mt-7 inline-flex rounded-full bg-[#151515] px-6 py-3 font-black text-white">Buat akun gratis →</Link>
         </div>
       </section>

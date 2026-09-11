@@ -145,7 +145,7 @@ export default function AccountsPage() {
   return (
     <div className="space-y-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div><p className="text-xs font-bold uppercase tracking-widest text-kicker">Account foundation</p><h2 className="mt-1 text-3xl font-black">Accounts & Pocket</h2><p className="mt-1 text-sm text-muted-foreground">Saldo per account, transfer, dan kolaborasi berbasis email.</p></div>
+        <div><p className="text-xs font-bold uppercase tracking-widest text-kicker">Tempat uangmu</p><h2 className="mt-1 text-3xl font-black">Pocket</h2><p className="mt-1 text-sm text-muted-foreground">Pisahkan saldo, pindahkan uang, dan kelola bersama orang tepercaya.</p></div>
         <Link href="/accounts/invitations"><Button variant="outline"><Users className="h-4 w-4" /> Undangan</Button></Link>
       </div>
 

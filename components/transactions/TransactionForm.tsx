@@ -208,13 +208,13 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
             value={accountId}
             onValueChange={() => {}}
             disabled
-            placeholder="Pilih active pocket dari navbar"
+            placeholder="Pilih Pocket aktif dari navigasi"
             options={selectedAccount ? [{
               value: selectedAccount.id,
               label: `${selectedAccount.name}${selectedAccount.ownership === "shared" ? ` · Shared by ${selectedAccount.owner?.name ?? "owner"}` : ""}`,
             }] : []}
           />
-          <p className="text-xs text-muted-foreground">Source mengikuti active pocket di navbar.</p>
+          <p className="text-xs text-muted-foreground">Sumber transaksi mengikuti Pocket aktif di navigasi.</p>
           {errors.accountId ? <p className="text-xs text-destructive">{errors.accountId}</p> : null}
         </div>
 

@@ -136,7 +136,7 @@ export function RecurringModal({ open, onClose, editing }: Props) {
     <Modal
       open={open}
       onClose={onClose}
-      title={editing ? "Edit Recurring" : "New Recurring Transaction"}
+      title={editing ? "Ubah transaksi rutin" : "Transaksi rutin baru"}
     >
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Type */}
@@ -208,7 +208,7 @@ export function RecurringModal({ open, onClose, editing }: Props) {
               value={form.accountId}
               onValueChange={() => {}}
               disabled
-              placeholder="Pilih active pocket dari navbar"
+              placeholder="Pilih Pocket aktif dari navigasi"
               options={selectedAccount ? [{ value: selectedAccount.id, label: `${selectedAccount.name}${selectedAccount.ownership === "shared" ? " · Shared" : ""}` }] : []}
             />
           </div>

@@ -1,20 +1,31 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import Script from "next/script";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { publicConfig } from "@/lib/public-config";
 
 const APP_NAME = "Manifly";
+const APP_TITLE = "Manifly - Financial Tracker";
+const APP_TAGLINE = "Biar uang nggak asal terbang.";
 const APP_DESCRIPTION =
-  "Catat dan pahami keuangan lewat web atau WhatsApp dengan dashboard, budget, dan analitik Manifly.";
+  "Catat lewat web atau WhatsApp, lihat ke mana uang pergi, dan jaga agar tidak habis tanpa terasa bersama Manifly.";
+const THEME_INIT_SCRIPT = `
+try {
+  const raw = localStorage.getItem("manifly:ui");
+  const selected = raw ? JSON.parse(raw)?.state?.theme : "system";
+  const dark = selected === "dark" ||
+    (selected !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.classList.toggle("dark", dark);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+} catch {}
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicConfig.siteUrl),
   title: {
-    default: `${APP_NAME} — Uang cepat, mimpi dekat`,
-    template: `%s · ${APP_NAME}`,
+    default: APP_TITLE,
+    template: `%s - ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
   alternates: { canonical: "/" },
@@ -22,10 +33,23 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: APP_NAME,
-    title: "Manifly — Uang cepat, mimpi dekat",
+    title: `Manifly — ${APP_TAGLINE}`,
     description: APP_DESCRIPTION,
     url: "/",
-    images: [{ url: "/brand/manifly-lockup.png", alt: "Manifly" }],
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: `Manifly — ${APP_TAGLINE}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Manifly — ${APP_TAGLINE}`,
+    description: APP_DESCRIPTION,
+    images: ["/opengraph-image.png"],
   },
   applicationName: APP_NAME,
   appleWebApp: {
@@ -78,11 +102,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
-      <head suppressHydrationWarning>
-        <Script
-          src="/theme-init.js"
-          strategy="beforeInteractive"
+      <head>
+        <script
+          // Some browser extensions mutate scripts before React starts. Keep
+          // this as a direct DOM node so the warning applies to the exact node.
           suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
         />
       </head>
       <body className="min-h-full">

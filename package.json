@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "icons": "node scripts/generate-icons.mjs",
-    "brand": "node scripts/build-brand.mjs"
+    "brand": "node scripts/build-brand.mjs",
+    "social-image": "node scripts/generate-social-image.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

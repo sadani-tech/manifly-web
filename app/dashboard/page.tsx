@@ -68,18 +68,18 @@ export default function DashboardPage() {
         <div className="flex min-w-0 items-center gap-3">
           <FlowBuddy
             className="hidden sm:inline-flex"
-            label="Flow, teman finansialmu"
+            label="Manifly, penjaga uangmu"
           />
           <div className="min-w-0">
             <p className="mb-1.5 flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.16em] text-foreground/55">
               <Sparkles className="h-3.5 w-3.5 text-brand-lime [filter:drop-shadow(0_0_0.5px_#151515)]" />{" "}
-              Money check-in
+              Cek uangmu
             </p>
             <h2 className="truncate text-3xl font-black tracking-[-0.025em] text-foreground sm:text-4xl">
               Halo, {user?.name?.split(" ")[0] ?? "teman"}!
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ledger aktif: {activeAccount?.name ?? "memuat pocket…"}
+              Pocket aktif: {activeAccount?.name ?? "memuat Pocket…"}
               {activeAccount?.ownership === "shared"
                 ? ` · Shared · ${activeAccount.role}`
                 : ""}
@@ -111,8 +111,8 @@ export default function DashboardPage() {
             transactionCount={summary.transactionCount}
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            Saldo dan metrik hanya berasal dari active pocket. Ganti pocket
-            melalui navbar untuk melihat ledger lain.
+            Ringkasan ini hanya memakai data Pocket aktif. Ganti Pocket di
+            navigasi untuk melihat catatan lainnya.
           </p>
         </div>
 
@@ -142,7 +142,7 @@ export default function DashboardPage() {
                 <Activity className="h-5 w-5" />
               </span>
               <div className="min-w-0 self-center">
-                <p className="font-black leading-tight">Financial Health</p>
+                <p className="font-black leading-tight">Kondisi keuangan</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   Lihat faktor pembentuk skor dan langkah yang bisa dicoba.
                 </p>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
               Arus kas
             </p>
             <CardTitle className="text-xl font-black tracking-[-0.025em]">
-              Uangmu bergerak ke mana?
+              Ke mana uangmu terbang?
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Perbandingan pemasukan dan pengeluaran enam bulan terakhir.
@@ -187,10 +187,10 @@ export default function DashboardPage() {
               Peta pengeluaran
             </p>
             <CardTitle className="text-xl font-black tracking-[-0.025em]">
-              Si paling boros bulan ini
+              Pengeluaran paling besar
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Tenang, tahu polanya adalah langkah pertama.
+              Lihat polanya tanpa menghakimi kebiasaanmu.
             </p>
           </CardHeader>
           <CardContent>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
         <Card className="neo-cutout interactive-lift overflow-hidden border-brand-navy/15">
           <CardHeader>
             <CardTitle className="text-xl font-black tracking-[-0.025em]">
-              Budget bulan ini
+              Rencana uang bulan ini
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Sedikit pagar supaya rencana tetap di jalurnya.
@@ -219,7 +219,7 @@ export default function DashboardPage() {
         <CardHeader className="flex-row items-end justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.14em] text-foreground/55">
-              Ledger terbaru
+              Catatan terbaru
             </p>
             <CardTitle className="mt-1 text-xl font-black tracking-[-0.025em]">
               Jejak uang terakhir

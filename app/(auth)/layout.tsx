@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   // `absolute` bypasses the root layout's "%s · Manifly" template, which
   // would otherwise render "Manifly · Manifly" on the auth pages.
   // These pages are client components, so the title must live on this layout.
-  title: { absolute: "Manifly" },
+  title: { absolute: "Manifly - Financial Tracker" },
 };
 
 const highlights = [
@@ -37,22 +37,22 @@ export default function AuthLayout({
                   Manifly
                 </p>
                 <p className="text-sm text-white/80">
-                  Teman uang yang nggak menghakimi
+                  Penjaga uang yang suka terbang
                 </p>
               </div>
             </div>
 
             <div className="mt-20 max-w-md">
               <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5 text-brand-lime" /> Lebih rapi,
-                lebih lega
+                <Sparkles className="h-3.5 w-3.5 text-brand-lime" /> Lebih
+                terlihat, lebih terkendali
               </p>
               <h1 className="text-5xl font-black leading-[.98] tracking-[-0.025em]">
-                Uangmu punya cerita. Yuk, baca dengan tenang.
+                Jangan biarkan uang pergi tanpa jejak.
               </h1>
               <p className="mt-5 max-w-sm text-base leading-relaxed text-white/70">
-                Catat yang masuk, pahami yang keluar, lalu rayakan kemajuan
-                kecilmu.
+                Tangkap setiap transaksi, pahami kebiasaanmu, dan jaga saldo
+                untuk hal yang memang penting.
               </p>
             </div>
           </div>

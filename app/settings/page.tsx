@@ -4,7 +4,7 @@ import { Crown, MessageSquare, UserCircle, WalletCards } from "lucide-react";
 const items = [
   {
     href: "/settings/profile",
-    label: "Profile",
+    label: "Profil",
     description: "Nama, password, dan keamanan akun.",
     icon: UserCircle,
   },
@@ -32,7 +32,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-black">Settings</h2>
+        <h2 className="text-3xl font-black">Pengaturan</h2>
         <p className="text-sm text-muted-foreground">
           Kelola profil, membership, WhatsApp, dan pockets.
         </p>
