@@ -5,7 +5,7 @@
 //
 // Outputs:
 //   public/brand/manifly-mark.png        – square, transparent winged-banknote mark
-//   public/brand/manifly-lockup.png      – vertical mark + wordmark + tagline
+//   public/brand/manifly-lockup.png      – vertical mark + current tagline
 //   public/brand/manifly-wordmark-*.png  – horizontal lockups (color / mono / light)
 //   public/icons/icon.svg                – PWA source (wraps the mark)
 //   public/icons/icon-{192,512}.png      – regular PWA icons ("any")
@@ -61,9 +61,8 @@ async function main() {
   const mark = await fs.readFile(path.join(brandDir, "manifly-mark.png"));
   console.log("wrote brand/manifly-mark.png");
 
-  // 2. Full lockups — copied verbatim for marketing / email / general UI use.
+  // 2. Horizontal lockups — copied verbatim for marketing / email / general UI use.
   const lockups = [
-    ["manifly.png", "manifly-lockup.png"],
     ["manifly-banner-colour.png", "manifly-wordmark-color.png"],
     ["manifly-banner-mono.png", "manifly-wordmark-mono.png"],
     ["manifly-banner-transparent.png", "manifly-wordmark-light.png"],
@@ -72,6 +71,102 @@ async function main() {
     await fs.copyFile(path.join(src, from), path.join(brandDir, to));
     console.log("wrote brand/" + to);
   }
+
+  // Remove the retired tagline baked into the horizontal source lockups. Its
+  // glyphs are isolated alpha components below the main mark, so component
+  // removal preserves the descending "y" in the Manifly wordmark.
+  for (const [, name] of lockups) {
+    const imagePath = path.join(brandDir, name);
+    const { data, info } = await sharp(imagePath)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const visited = new Uint8Array(info.width * info.height);
+    const queue = new Int32Array(info.width * info.height);
+
+    for (let start = 0; start < visited.length; start += 1) {
+      if (visited[start] || data[start * 4 + 3] === 0) continue;
+      let head = 0;
+      let tail = 1;
+      let minY = Math.floor(start / info.width);
+      queue[0] = start;
+      visited[start] = 1;
+
+      while (head < tail) {
+        const pixel = queue[head++];
+        const x = pixel % info.width;
+        const y = Math.floor(pixel / info.width);
+        if (y < minY) minY = y;
+        const neighbors = [
+          x > 0 ? pixel - 1 : -1,
+          x + 1 < info.width ? pixel + 1 : -1,
+          y > 0 ? pixel - info.width : -1,
+          y + 1 < info.height ? pixel + info.width : -1,
+        ];
+        for (const next of neighbors) {
+          if (
+            next >= 0 &&
+            !visited[next] &&
+            data[next * 4 + 3] !== 0
+          ) {
+            visited[next] = 1;
+            queue[tail++] = next;
+          }
+        }
+      }
+
+      if (minY >= 430) {
+        for (let index = 0; index < tail; index += 1) {
+          const offset = queue[index] * 4;
+          data[offset] = 0;
+          data[offset + 1] = 0;
+          data[offset + 2] = 0;
+          data[offset + 3] = 0;
+        }
+      }
+    }
+
+    const cleaned = await sharp(data, { raw: info })
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+    await fs.writeFile(imagePath, cleaned);
+  }
+
+  // The original vertical source contains an outdated tagline baked into the
+  // pixels. Recompose it from the mark and wordmark so product copy stays in
+  // sync with the current Manifly positioning.
+  const lockupMark = await sharp(mark)
+    .resize(500, 500, { fit: "contain", background: TRANSPARENT })
+    .toBuffer();
+  const lockupWordmark = await sharp(
+    path.join(brandDir, "manifly-wordmark-color.png"),
+  )
+    .extract({ left: 760, top: 0, width: 1412, height: 724 })
+    .resize(800, 300, { fit: "contain", background: TRANSPARENT })
+    .toBuffer();
+  const lockupTagline = Buffer.from(`
+    <svg width="1122" height="130" xmlns="http://www.w3.org/2000/svg">
+      <text x="561" y="82" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="48" font-weight="700"
+        fill="#151515">Biar uang nggak asal terbang.</text>
+    </svg>
+  `);
+  await sharp({
+    create: {
+      width: 1122,
+      height: 1100,
+      channels: 4,
+      background: TRANSPARENT,
+    },
+  })
+    .composite([
+      { input: lockupMark, left: 311, top: 70 },
+      { input: lockupWordmark, left: 161, top: 565 },
+      { input: lockupTagline, left: 0, top: 835 },
+    ])
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(brandDir, "manifly-lockup.png"));
+  console.log("wrote brand/manifly-lockup.png");
 
   // 3. PWA SVG source.
   const svgPng = await sharp(mark).resize(512, 512).png().toBuffer();

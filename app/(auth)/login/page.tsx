@@ -24,7 +24,14 @@ export default function LoginPage() {
     try {
       const { user, accessToken } = await authApi.login(form);
       setAuth(user, accessToken);
-      router.replace("/dashboard");
+      const returnTo = new URLSearchParams(window.location.search).get(
+        "returnTo",
+      );
+      router.replace(
+        returnTo?.startsWith("/") && !returnTo.startsWith("//")
+          ? returnTo
+          : "/dashboard",
+      );
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Terjadi kesalahan");
     } finally {
@@ -43,7 +50,7 @@ export default function LoginPage() {
           Masuk ke Manifly
         </h1>
         <p className="text-center text-sm text-muted-foreground lg:text-left">
-          Bersiap untuk terbang bersama uangmu. (• ᴗ •)
+          Lanjut pantau uangmu sebelum terbang tanpa terasa. (• ᴗ •)
         </p>
       </div>
 

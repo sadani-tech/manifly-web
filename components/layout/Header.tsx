@@ -81,7 +81,7 @@ export const Header: React.FC = () => {
         <BrandMark size={36} decorative className="md:hidden" />
         <div className="min-w-0">
           <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-foreground/45 sm:block">
-            Manifly space
+            Ruang Manifly
           </p>
           <h1 className="truncate text-base font-bold tracking-[-0.02em] sm:text-lg">
             {title}
@@ -132,7 +132,7 @@ export const Header: React.FC = () => {
                   onClick={() => setProfileOpen(false)}
                   className="focus-ring mt-1 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-muted"
                 >
-                  <UserCircle className="h-4 w-4" /> Profile
+                  <UserCircle className="h-4 w-4" /> Profil
                 </Link>
                 <Link
                   role="menuitem"
@@ -148,7 +148,7 @@ export const Header: React.FC = () => {
                   onClick={handleLogout}
                   className="focus-ring flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10"
                 >
-                  <LogOut className="h-4 w-4" /> Logout
+                  <LogOut className="h-4 w-4" /> Keluar
                 </button>
               </div>
             )}

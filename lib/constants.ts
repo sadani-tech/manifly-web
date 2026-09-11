@@ -117,12 +117,12 @@ export const NAV_ITEMS = [
   { href: "/transactions", label: "Transactions", icon: "ArrowLeftRight" },
   { href: "/budget", label: "Budget", icon: "PiggyBank" },
   { href: "/recurring", label: "Recurring", icon: "Repeat" },
-  { href: "/debts", label: "Hutang", icon: "HandCoins" },
+  { href: "/debts", label: "Debts", icon: "HandCoins" },
   { href: "/import", label: "Import", icon: "ScanLine" },
   { href: "/categories", label: "Categories", icon: "Tags" },
   { href: "/analytics", label: "Analytics", icon: "BarChart3" },
   { href: "/smart-rules", label: "Smart Rules", icon: "WandSparkles" },
-  { href: "/financial-health", label: "Health", icon: "HeartPulse" },
+  { href: "/financial-health", label: "Financial Health", icon: "HeartPulse" },
   { href: "/settings", label: "Settings", icon: "Settings" },
 ] as const;
 
@@ -132,7 +132,7 @@ export const SETTINGS_ITEMS = [
   { href: "/settings/whatsapp", label: "WhatsApp", icon: "MessageSquare" },
   {
     href: "/settings/accounts",
-    label: "Accounts / Pockets",
+    label: "Pocket",
     icon: "WalletCards",
   },
 ] as const;

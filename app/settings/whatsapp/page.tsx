@@ -530,6 +530,7 @@ export default function WhatsAppSettingsPage() {
                   <button
                     type="button"
                     role="switch"
+                    aria-label={`Notifikasi untuk ${number.label}`}
                     aria-checked={number.notificationsEnabled}
                     disabled={
                       submitting ||
@@ -541,14 +542,12 @@ export default function WhatsAppSettingsPage() {
                         notificationsEnabled: !number.notificationsEnabled,
                       })
                     }
-                    className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50 ${number.notificationsEnabled || number.isPrimary ? "bg-brand-lime" : "bg-muted-foreground/30"}`}
                   >
-                    Notifikasi:{" "}
-                    {number.isPrimary
-                      ? "Default"
-                      : number.notificationsEnabled
-                        ? "Aktif"
-                        : "Mati"}
+                    <span
+                      aria-hidden
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full border border-black/10 bg-white shadow-sm transition-transform ${number.notificationsEnabled || number.isPrimary ? "translate-x-5" : "translate-x-0"}`}
+                    />
                   </button>
                   <button
                     type="button"

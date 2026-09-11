@@ -316,7 +316,7 @@ export const ImportClient: React.FC = () => {
       return;
     }
     if (!form.accountId) {
-      setErrorMessage(activeAccount?.role === "viewer" ? "Active pocket hanya memiliki akses viewer." : "Pilih active pocket dari navbar.");
+      setErrorMessage(activeAccount?.role === "viewer" ? "Pocket aktif hanya dapat dilihat." : "Pilih Pocket aktif dari navigasi.");
       return;
     }
     setErrorMessage("");
@@ -738,13 +738,13 @@ const ConfirmStage: React.FC<ConfirmStageProps> = ({
                 value={form.accountId}
                 onValueChange={() => {}}
                 disabled
-                placeholder="Pilih active pocket dari navbar"
+                placeholder="Pilih Pocket aktif dari navigasi"
                 options={accounts.map((account) => ({
                   value: account.id,
                   label: `${account.name}${account.ownership === "shared" ? " · Shared" : ""}`,
                 }))}
               />
-              <p className="text-xs text-muted-foreground">Hasil OCR akan dicatat ke active pocket.</p>
+              <p className="text-xs text-muted-foreground">Hasil pindai akan masuk ke Pocket aktif.</p>
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">

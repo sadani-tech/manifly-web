@@ -68,7 +68,7 @@ export const Sidebar: React.FC = () => {
               Manifly
             </span>
             <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
-              Uang cepat, mimpi dekat.
+              Biar uang nggak asal terbang.
             </span>
           </div>
         )}
@@ -140,13 +140,13 @@ export const Sidebar: React.FC = () => {
           <div className="mb-3 flex items-center gap-2 rounded-[1.15rem] border border-white/12 bg-white/[0.07] p-2.5">
             <FlowBuddy size="sm" />
             <p className="text-[11px] leading-snug text-white/60">
-              Pelan-pelan, uangmu mulai lebih tertata ✨
+              Makin sedikit uang yang terbang tanpa jejak ✨
             </p>
           </div>
         )}
         <button
           onClick={toggleSidebar}
-          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={sidebarCollapsed ? "Buka navigasi" : "Tutup navigasi"}
           className={cn(
             "focus-ring flex w-full items-center gap-2 rounded-xl px-2 py-2 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white",
             sidebarCollapsed && "justify-center",
@@ -157,7 +157,7 @@ export const Sidebar: React.FC = () => {
           ) : (
             <>
               <ChevronLeft className="h-4 w-4 shrink-0" />
-              <span>Collapse</span>
+              <span>Tutup navigasi</span>
             </>
           )}
         </button>

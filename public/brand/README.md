@@ -16,4 +16,4 @@ npm run brand
 | `manifly-wordmark-light.png` | Horizontal lockup with light text, for dark backgrounds. |
 
 Brand colours (see `app/globals.css`): navy `#151515`, lime `#c9f45a`,
-violet `#e8a0ff`, blue `#006ee9`, sky `#83e7ff`. Tagline: *Uang cepat, mimpi dekat.*
+violet `#e8a0ff`, blue `#006ee9`, sky `#83e7ff`. Tagline: *Biar uang nggak asal terbang.*

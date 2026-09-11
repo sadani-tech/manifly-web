@@ -73,7 +73,7 @@ export const Logo: React.FC<LogoProps> = ({
             tone,
           )}
         >
-          Uang cepat, mimpi dekat.
+          Biar uang nggak asal terbang.
         </span>
       )}
     </span>
