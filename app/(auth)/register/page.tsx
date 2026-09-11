@@ -28,7 +28,14 @@ export default function RegisterPage() {
     try {
       const { user, accessToken } = await authApi.register(form);
       setAuth(user, accessToken);
-      router.replace("/dashboard");
+      const returnTo = new URLSearchParams(window.location.search).get(
+        "returnTo",
+      );
+      router.replace(
+        returnTo?.startsWith("/") && !returnTo.startsWith("//")
+          ? returnTo
+          : "/dashboard",
+      );
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Terjadi kesalahan");
     } finally {

@@ -4,17 +4,29 @@ import { GeistMono } from "geist/font/mono";
 import Script from "next/script";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
+import { publicConfig } from "@/lib/public-config";
 
 const APP_NAME = "Manifly";
 const APP_DESCRIPTION =
-  "Track income and expenses, categorize transactions, view analytics, and export your financial data.";
+  "Catat dan pahami keuangan lewat web atau WhatsApp dengan dashboard, budget, dan analitik Manifly.";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(publicConfig.siteUrl),
   title: {
-    default: `${APP_NAME} — Personal finance tracker`,
+    default: `${APP_NAME} — Uang cepat, mimpi dekat`,
     template: `%s · ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: APP_NAME,
+    title: "Manifly — Uang cepat, mimpi dekat",
+    description: APP_DESCRIPTION,
+    url: "/",
+    images: [{ url: "/brand/manifly-lockup.png", alt: "Manifly" }],
+  },
   applicationName: APP_NAME,
   appleWebApp: {
     capable: true,

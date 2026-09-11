@@ -24,7 +24,14 @@ export default function LoginPage() {
     try {
       const { user, accessToken } = await authApi.login(form);
       setAuth(user, accessToken);
-      router.replace("/dashboard");
+      const returnTo = new URLSearchParams(window.location.search).get(
+        "returnTo",
+      );
+      router.replace(
+        returnTo?.startsWith("/") && !returnTo.startsWith("//")
+          ? returnTo
+          : "/dashboard",
+      );
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Terjadi kesalahan");
     } finally {

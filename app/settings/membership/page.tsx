@@ -15,13 +15,17 @@ import {
   Smartphone,
 } from "lucide-react";
 import {
+  billingApi,
   membershipApi,
+  type BillingStatus,
   type MembershipAddonSummary,
   type MembershipPlanSummary,
   type MembershipSnapshot,
   type MembershipUsage,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { BillingCheckoutDialog } from "@/components/membership/BillingCheckoutDialog";
+import { BillingLifecyclePanel } from "@/components/membership/BillingLifecyclePanel";
 
 const ENTITLEMENTS = [
   { key: "whatsapp.numbers", label: "Nomor WhatsApp", icon: Smartphone },
@@ -63,6 +67,10 @@ export default function MembershipPage() {
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
+  const [selectedPlan, setSelectedPlan] =
+    useState<MembershipPlanSummary | null>(null);
+  const [selectedAddonQuantity, setSelectedAddonQuantity] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -72,18 +80,32 @@ export default function MembershipPage() {
         setNumberRequirement(required);
     }
 
+    const requestedPlan = params.get("plan");
     Promise.all([
       membershipApi.get(),
       membershipApi.plans(),
       membershipApi.addons(),
       membershipApi.usage(),
+      billingApi.status().catch(() => ({
+        checkoutEnabled: false,
+        ready: false,
+        reason: "Status pembayaran belum dapat diperiksa.",
+        contractVersion: null,
+      })),
     ])
-      .then(([current, availablePlans, availableAddons, currentUsage]) => {
+      .then(
+        ([current, availablePlans, availableAddons, currentUsage, status]) => {
         setMembership(current);
         setPlans(availablePlans);
         setAddons(availableAddons);
         setUsage(currentUsage);
-      })
+        setBillingStatus(status);
+        const requested = availablePlans.find(
+          (plan) => plan.code === requestedPlan && plan.priceMonthly > 0,
+        );
+        if (requested && status.ready) setSelectedPlan(requested);
+      },
+      )
       .catch(() =>
         setError("Membership belum dapat dimuat. Coba lagi beberapa saat."),
       )
@@ -232,11 +254,20 @@ export default function MembershipPage() {
                 ) : (
                   <button
                     type="button"
-                    disabled
-                    className="mt-6 flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-xl border bg-muted/70 text-sm font-bold text-muted-foreground opacity-80"
+                    disabled={plan.priceMonthly === 0 || !billingStatus?.ready}
+                    onClick={() => {
+                      setSelectedAddonQuantity(0);
+                      setSelectedPlan(plan);
+                    }}
+                    title={billingStatus?.reason ?? undefined}
+                    className="mt-6 flex h-11 items-center justify-center gap-2 rounded-xl border bg-primary text-sm font-bold text-primary-foreground disabled:cursor-not-allowed disabled:bg-muted/70 disabled:text-muted-foreground disabled:opacity-80"
                   >
-                    <LockKeyhole className="h-4 w-4" /> Pembayaran belum
-                    tersedia
+                    {!billingStatus?.ready && <LockKeyhole className="h-4 w-4" />}
+                    {plan.priceMonthly === 0
+                      ? "Plan fallback otomatis"
+                      : billingStatus?.ready
+                        ? `Pilih ${plan.name}`
+                        : billingStatus?.reason || "Pembayaran belum tersedia"}
                   </button>
                 )}
               </section>
@@ -311,13 +342,33 @@ export default function MembershipPage() {
                   )}
                   <button
                     type="button"
-                    disabled
-                    className="mt-4 flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border bg-muted/70 text-sm font-bold text-muted-foreground opacity-80"
+                    disabled={
+                      availableQuantity === 0 ||
+                      !billingStatus?.ready ||
+                      !membership ||
+                      membership.plan.priceMonthly === 0
+                    }
+                    onClick={() => {
+                      const currentPlan = plans.find(
+                        (plan) => plan.code === membership?.plan.code,
+                      );
+                      if (!currentPlan) return;
+                      setSelectedAddonQuantity(
+                        Math.min(
+                          maximumQuantity ?? 0,
+                          (activeAddon?.quantity ?? 0) + 1,
+                        ),
+                      );
+                      setSelectedPlan(currentPlan);
+                    }}
+                    className="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-xl border bg-primary text-sm font-bold text-primary-foreground disabled:cursor-not-allowed disabled:bg-muted/70 disabled:text-muted-foreground disabled:opacity-80"
                   >
-                    <LockKeyhole className="h-4 w-4" />
+                    {!billingStatus?.ready && <LockKeyhole className="h-4 w-4" />}
                     {availableQuantity === 0
                       ? "Batas 3 nomor tercapai"
-                      : "Pembayaran belum tersedia"}
+                      : billingStatus?.ready
+                        ? "Tambah lewat checkout"
+                        : billingStatus?.reason || "Pembayaran belum tersedia"}
                   </button>
                 </article>
               );
@@ -382,6 +433,14 @@ export default function MembershipPage() {
             {membership.pricingNotice}
           </p>
         </section>
+      )}
+      <BillingLifecyclePanel />
+      {selectedPlan && (
+        <BillingCheckoutDialog
+          plan={selectedPlan}
+          initialAddonQuantity={selectedAddonQuantity}
+          onClose={() => setSelectedPlan(null)}
+        />
       )}
     </div>
   );

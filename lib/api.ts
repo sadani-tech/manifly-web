@@ -444,10 +444,17 @@ export interface ActiveMembershipAddon {
 
 export interface MembershipSnapshot {
   status: string;
-  plan: Pick<MembershipPlanSummary, "code" | "name" | "version">;
+  plan: Pick<
+    MembershipPlanSummary,
+    "code" | "name" | "version" | "priceMonthly" | "currency"
+  >;
   periodStart: string;
   periodEnd: string;
   resetAt: string;
+  paidThrough: string | null;
+  graceEndsAt: string | null;
+  cancelAt: string | null;
+  paymentServiceSubscriptionRef: string | null;
   entitlements: Record<string, number>;
   addons: ActiveMembershipAddon[];
   pricingNotice: string;
@@ -462,6 +469,128 @@ export const membershipApi = {
     request<MembershipSnapshot>(`/membership/addons/${code}`, {
       method: "PUT",
       body: JSON.stringify({ quantity }),
+    }),
+};
+
+export interface BillingStatus {
+  checkoutEnabled: boolean;
+  ready: boolean;
+  reason: string | null;
+  contractVersion: string | null;
+}
+
+export interface BillingConfiguration {
+  plan: {
+    id: string;
+    code: "lite" | "plus" | "pro";
+    name: string;
+    version: number;
+    priceMonthly: number;
+    currency: string;
+    whatsappNumbers: number;
+  };
+  addons: Array<{
+    id: string;
+    code: "whatsapp-number";
+    name: string;
+    version: number;
+    quantity: number;
+    priceMonthly: number;
+    entitlementIncrement: number;
+  }>;
+}
+
+export interface BillingSummary {
+  configuration: BillingConfiguration;
+  lineItems: Array<{
+    type: "plan" | "addon";
+    code: string;
+    name: string;
+    version: number;
+    quantity: number;
+    unitAmount: number;
+    amount: number;
+  }>;
+  total: number;
+  currency: string;
+  interval: "month";
+  autoRenew: boolean;
+  chargeTiming: string;
+  replacementDisclosure: string;
+  providerCostNotice: string;
+}
+
+export interface BillingCheckout {
+  referenceId: string;
+  status:
+    | "pending"
+    | "verifying"
+    | "active"
+    | "failed"
+    | "expired"
+    | "cancelled"
+    | "retryable";
+  checkoutUrl: string | null;
+  expiresAt: string | null;
+  amount: number;
+  currency: string;
+  configuration: BillingConfiguration;
+}
+
+export const billingApi = {
+  status: () => request<BillingStatus>("/billing/status"),
+  summary: (plan: string, addon = 0) =>
+    request<BillingSummary>(
+      `/billing/summary?plan=${encodeURIComponent(plan)}&addon=${addon}`,
+    ),
+  checkout: (data: {
+    plan: "lite" | "plus" | "pro";
+    addonQuantity: number;
+    acceptTerms: boolean;
+    acceptPrivacy: boolean;
+    acceptRefundPolicy: boolean;
+    policyVersion: string;
+    idempotencyKey: string;
+  }) =>
+    request<BillingCheckout>("/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  checkoutStatus: (referenceId: string) =>
+    request<BillingCheckout>(
+      `/billing/checkouts/${encodeURIComponent(referenceId)}`,
+    ),
+  subscription: () =>
+    request<{
+      membership: MembershipSnapshot;
+      subscription: {
+        referenceId: string;
+        status: string;
+        amount: number;
+        currency: string;
+        periodStart: string | null;
+        periodEnd: string | null;
+        paidThrough: string | null;
+        cancelAt: string | null;
+        cycles: Array<{
+          reference: string;
+          status: string;
+          amount: number;
+          currency: string;
+          paidAt: string | null;
+        }>;
+      } | null;
+    }>("/billing/subscription"),
+  cancel: () => request("/billing/cancel", { method: "POST" }),
+  resume: () => request("/billing/resume", { method: "POST" }),
+  requestRefund: (data: {
+    paymentReference: string;
+    requestedAmount: number;
+    reason: string;
+  }) =>
+    request<{ id: string; status: string; message: string }>("/billing/refund-requests", {
+      method: "POST",
+      body: JSON.stringify(data),
     }),
 };
 

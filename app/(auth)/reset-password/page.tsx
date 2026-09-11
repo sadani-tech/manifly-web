@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 import { authApi, ApiError } from "@/lib/api";
 import { BrandMark } from "@/components/shared/Logo";
 
 export default function ResetPasswordPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token") ?? "";
+  const [token, setToken] = useState("");
 
   const [form, setForm] = useState({ password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -19,8 +18,10 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!token) setError("Token tidak ditemukan. Gunakan link dari email kamu.");
-  }, [token]);
+    const value = new URLSearchParams(window.location.search).get("token") ?? "";
+    setToken(value);
+    if (!value) setError("Token tidak ditemukan. Gunakan link dari email kamu.");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

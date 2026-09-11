@@ -20,7 +20,17 @@ import { useUIStore } from "@/store/uiStore";
 import { useAccountStore } from "@/store/accountStore";
 
 // Routes that render without the authenticated app chrome or the auth gate.
-const PUBLIC_ROUTES = ["/login", "/register"];
+const PUBLIC_EXACT_ROUTES = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/pricing",
+  "/contact",
+  "/data-deletion",
+];
+const PUBLIC_ROUTE_PREFIXES = ["/legal/", "/checkout/"];
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -33,7 +43,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const fetchAccounts = useAccountStore((s) => s.fetchAccounts);
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isPublicRoute =
+    PUBLIC_EXACT_ROUTES.includes(pathname) ||
+    PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   // The token lives in a zustand `persist` store backed by localStorage. On a
   // cold start (especially the installed PWA) that store rehydrates *after* the
