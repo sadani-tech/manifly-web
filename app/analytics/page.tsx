@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -20,34 +20,87 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useCurrency } from "@/hooks/useCurrency";
 import type { Transaction } from "@/lib/types";
+import { analyticsApi, type ApiAnalyticsPeriod } from "@/lib/api";
+import { useAccountStore } from "@/store/accountStore";
 
 const RANGES = [
-  { label: "3 bulan terakhir", months: 3 },
-  { label: "6 bulan terakhir", months: 6 },
-  { label: "12 bulan terakhir", months: 12 },
+  { label: "30 hari terakhir", period: "1m", months: 1 },
+  { label: "3 bulan terakhir", period: "3m", months: 3 },
+  { label: "6 bulan terakhir", period: "6m", months: 6 },
+  { label: "12 bulan terakhir", period: "12m", months: 12 },
 ] as const;
 
 export default function AnalyticsPage() {
   const { transactions } = useTransactions();
-  const [months, setMonths] = useState<number>(6);
+  const [period, setPeriod] = useState<ApiAnalyticsPeriod["period"]>("6m");
+  const months = RANGES.find((range) => range.period === period)?.months ?? 6;
+  const activeAccountId = useAccountStore((state) => state.activeAccountId);
+  const [serverAnalytics, setServerAnalytics] =
+    useState<ApiAnalyticsPeriod | null>(null);
   const { fmt } = useCurrency();
 
   const cutoff = useMemo(() => {
     const d = new Date();
+    if (period === "1m") {
+      d.setDate(d.getDate() - 29);
+      return d.toISOString().slice(0, 10);
+    }
     d.setDate(1);
     d.setMonth(d.getMonth() - (months - 1));
     return d.toISOString().slice(0, 10);
-  }, [months]);
+  }, [months, period]);
 
   const inRange: Transaction[] = useMemo(
-    () => transactions.filter((tx) => tx.date >= cutoff),
-    [transactions, cutoff],
+    () =>
+      transactions.filter(
+        (tx) =>
+          tx.date >= cutoff &&
+          (!activeAccountId || tx.accountId === activeAccountId),
+      ),
+    [transactions, cutoff, activeAccountId],
   );
 
-  const { summary, monthly, expenseByCategory, momChange } = useAnalytics({
+  const clientAnalytics = useAnalytics({
     transactions: inRange,
     months,
   });
+  useEffect(() => {
+    analyticsApi
+      .get(period, activeAccountId ?? undefined)
+      .then(setServerAnalytics)
+      .catch(() => setServerAnalytics(null));
+  }, [period, activeAccountId]);
+  const summary = serverAnalytics
+    ? {
+        totalBalance: serverAnalytics.summary.net,
+        totalIncome: serverAnalytics.summary.totalIncome,
+        totalExpense: serverAnalytics.summary.totalExpense,
+        transactionCount: serverAnalytics.summary.transactionCount,
+      }
+    : clientAnalytics.summary;
+  const monthly = serverAnalytics
+    ? serverAnalytics.buckets.map((bucket) => ({
+        month:
+          serverAnalytics.granularity === "day"
+            ? bucket.key.slice(5)
+            : bucket.key,
+        income: bucket.income,
+        expense: bucket.expense,
+        net: bucket.net,
+      }))
+    : clientAnalytics.monthly;
+  const { expenseByCategory, momChange } = clientAnalytics;
+  const periodChange = serverAnalytics
+    ? {
+        delta: serverAnalytics.summary.net - serverAnalytics.comparison.net,
+        pct:
+          serverAnalytics.comparison.net === 0
+            ? null
+            : ((serverAnalytics.summary.net - serverAnalytics.comparison.net) /
+                Math.abs(serverAnalytics.comparison.net)) *
+              100,
+      }
+    : momChange;
 
   const topCategory = expenseByCategory[0];
 
@@ -66,9 +119,9 @@ export default function AnalyticsPage() {
   }, [inRange]);
 
   const momTone =
-    momChange === null
+    periodChange === null
       ? "neutral"
-      : momChange.delta >= 0
+      : periodChange.delta >= 0
         ? "positive"
         : "negative";
   const momIcon =
@@ -91,17 +144,20 @@ export default function AnalyticsPage() {
             Analitik
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Lihat pengeluaran yang paling sering membuat uang pergi tanpa terasa.
+            Lihat pengeluaran yang paling sering membuat uang pergi tanpa
+            terasa.
           </p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="range">Periode</Label>
           <Select
             id="range"
-            value={months}
-            onValueChange={(range) => setMonths(Number(range))}
+            value={period}
+            onValueChange={(range) =>
+              setPeriod(range as ApiAnalyticsPeriod["period"])
+            }
             options={RANGES.map((range) => ({
-              value: String(range.months),
+              value: range.period,
               label: range.label,
             }))}
           />
@@ -128,18 +184,18 @@ export default function AnalyticsPage() {
           icon={<ArrowDownLeft className="h-4 w-4" />}
         />
         <InsightCard
-          label="Bulan ini vs bulan lalu"
+          label="Periode ini vs sebelumnya"
           value={
-            momChange === null
+            periodChange === null
               ? "—"
-              : `${momChange.delta >= 0 ? "+" : ""}${fmt(momChange.delta)}`
+              : `${periodChange.delta >= 0 ? "+" : ""}${fmt(periodChange.delta)}`
           }
           delta={
-            momChange === null
+            periodChange === null
               ? undefined
-              : momChange.pct === null
-                ? "vs bulan lalu"
-                : `${momChange.pct >= 0 ? "+" : ""}${momChange.pct.toFixed(1)}% vs bulan lalu`
+              : periodChange.pct === null
+                ? "vs periode sebelumnya"
+                : `${periodChange.pct >= 0 ? "+" : ""}${periodChange.pct.toFixed(1)}% vs periode sebelumnya`
           }
           tone={momTone}
           icon={momIcon}

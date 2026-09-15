@@ -40,6 +40,7 @@ export const CATEGORY_COLORS = [
 export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: "cat-salary",
+    code: "salary",
     name: "Salary",
     color: "#10b981",
     icon: "Briefcase",
@@ -48,6 +49,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-investment",
+    code: "investment",
     name: "Investment",
     color: "#06b6d4",
     icon: "TrendingUp",
@@ -55,7 +57,17 @@ export const DEFAULT_CATEGORIES: Category[] = [
     isDefault: true,
   },
   {
+    id: "cat-trading",
+    code: "trading",
+    name: "Trading",
+    color: "#6366f1",
+    icon: "ChartCandlestick",
+    type: "both",
+    isDefault: true,
+  },
+  {
     id: "cat-food",
+    code: "food",
     name: "Food",
     color: "#f97316",
     icon: "Utensils",
@@ -64,6 +76,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-transport",
+    code: "transport",
     name: "Transport",
     color: "#3b82f6",
     icon: "Car",
@@ -72,6 +85,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-entertainment",
+    code: "entertainment",
     name: "Entertainment",
     color: "#8b5cf6",
     icon: "Film",
@@ -80,6 +94,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-health",
+    code: "health",
     name: "Health",
     color: "#ec4899",
     icon: "HeartPulse",
@@ -88,6 +103,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-shopping",
+    code: "shopping",
     name: "Shopping",
     color: "#a855f7",
     icon: "ShoppingBag",
@@ -96,6 +112,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-bills",
+    code: "bills",
     name: "Bills",
     color: "#ef4444",
     icon: "Receipt",
@@ -104,6 +121,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
   {
     id: "cat-other",
+    code: "other",
     name: "Other",
     color: "#64748b",
     icon: "Tag",
@@ -123,6 +141,8 @@ export const NAV_ITEMS = [
   { href: "/analytics", label: "Analytics", icon: "BarChart3" },
   { href: "/smart-rules", label: "Smart Rules", icon: "WandSparkles" },
   { href: "/financial-health", label: "Financial Health", icon: "HeartPulse" },
+  { href: "/plan", label: "Plan", icon: "Target" },
+  { href: "/net-worth", label: "Net Worth", icon: "Landmark" },
   { href: "/settings", label: "Settings", icon: "Settings" },
 ] as const;
 

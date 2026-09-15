@@ -21,6 +21,8 @@ import {
   UserCircle,
   WalletCards,
   WandSparkles,
+  Target,
+  Landmark,
   type LucideIcon,
 } from "lucide-react";
 import { NAV_ITEMS, SETTINGS_ITEMS } from "@/lib/constants";
@@ -46,6 +48,8 @@ const ICONS: Record<string, LucideIcon> = {
   WalletCards,
   WandSparkles,
   Crown,
+  Target,
+  Landmark,
 };
 
 export const Sidebar: React.FC = () => {

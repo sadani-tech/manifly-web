@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { useCategories } from "@/hooks/useCategories";
 import { useTransactionStore } from "@/store/transactionStore";
-import { CURRENCIES } from "@/lib/constants";
 import type { Transaction, TransactionType, CurrencyCode } from "@/lib/types";
 import { todayISO, parseCurrencyInput } from "@/lib/utils";
 import { useAccountStore } from "@/store/accountStore";
@@ -29,12 +28,17 @@ export interface TransactionFormValues {
 
 interface TransactionFormProps {
   initial?: Transaction;
-  onSubmit: (values: TransactionFormValues) => void;
+  onSubmit: (values: TransactionFormValues) => void | Promise<void>;
   onCancel: () => void;
   submitting?: boolean;
 }
 
-export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSubmit, onCancel, submitting = false }) => {
+export const TransactionForm: React.FC<TransactionFormProps> = ({
+  initial,
+  onSubmit,
+  onCancel,
+  submitting = false,
+}) => {
   const { categories } = useCategories();
   const { transactions: allTransactions } = useTransactionStore();
   const accounts = useAccountStore((state) => state.accounts);
@@ -48,18 +52,31 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
     return Array.from(set).sort();
   }, [allTransactions]);
 
-  const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : "");
+  const [amount, setAmount] = useState<string>(
+    initial ? String(initial.amount) : "",
+  );
   const [type, setType] = useState<TransactionType>(initial?.type ?? "expense");
-  const [categoryId, setCategoryId] = useState<string>(initial?.categoryId ?? "");
+  const [categoryId, setCategoryId] = useState<string>(
+    initial?.categoryId ?? "",
+  );
   const [date, setDate] = useState<string>(initial?.date ?? todayISO());
   const [notes, setNotes] = useState<string>(initial?.notes ?? "");
-  const selectedAccount = accounts.find((account) => account.id === (initial?.accountId ?? activeAccountId));
+  const [accountId, setAccountId] = useState(
+    initial?.accountId ?? activeAccountId ?? "",
+  );
+  const selectedAccount = accounts.find((account) => account.id === accountId);
   const currency = (selectedAccount?.currency ?? "IDR") as CurrencyCode;
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [tagInput, setTagInput] = useState("");
-  const [accountId, setAccountId] = useState(initial?.accountId ?? activeAccountId ?? "");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof TransactionFormValues, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof TransactionFormValues, string>>
+  >({});
+  const submitLock = useRef(false);
+  const writableAccounts = accounts.filter(
+    (account) =>
+      !account.archivedAt && account.role !== "viewer" && !account.readOnly,
+  );
 
   useEffect(() => {
     if (!initial) setAccountId(activeAccountId ?? "");
@@ -68,18 +85,27 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
   const tagSuggestions = useMemo(() => {
     if (!tagInput.trim()) return [];
     const query = tagInput.startsWith("#") ? tagInput : `#${tagInput}`;
-    return allUsedTags.filter((t) => t.startsWith(query) && !tags.includes(t)).slice(0, 6);
+    return allUsedTags
+      .filter((t) => t.startsWith(query) && !tags.includes(t))
+      .slice(0, 6);
   }, [tagInput, allUsedTags, tags]);
 
   // Only show categories valid for the chosen type. Default to first match.
   const validCategories = useMemo(
-    () => categories.filter((c) => c.type === type || c.type === "both"),
+    () =>
+      categories.filter(
+        (c) =>
+          !c.archivedAt &&
+          !c.readOnly &&
+          (c.type === type || c.type === "both"),
+      ),
     [categories, type],
   );
 
   // Whenever the type changes, ensure the selected category is still valid.
   const selectedCategoryId = useMemo(() => {
-    if (categoryId && validCategories.some((c) => c.id === categoryId)) return categoryId;
+    if (categoryId && validCategories.some((c) => c.id === categoryId))
+      return categoryId;
     return validCategories[0]?.id ?? "";
   }, [categoryId, validCategories]);
 
@@ -116,8 +142,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitLock.current || submitting) return;
     const next: typeof errors = {};
 
     const parsed = parseCurrencyInput(amount);
@@ -133,18 +160,31 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
     if (!accountId) next.accountId = "Pick an account.";
 
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      const first = Object.keys(next)[0];
+      document
+        .getElementById(
+          `tx-${first === "categoryId" ? "category" : first === "accountId" ? "account" : first}`,
+        )
+        ?.focus();
+      return;
+    }
 
-    onSubmit({
-      amount: Math.round(parsed * 100) / 100,
-      type,
-      categoryId: selectedCategoryId,
-      date,
-      notes: notes.trim() || undefined,
-      currency,
-      tags: tags.length > 0 ? tags : undefined,
-      accountId,
-    });
+    submitLock.current = true;
+    try {
+      await onSubmit({
+        amount: Math.round(parsed * 100) / 100,
+        type,
+        categoryId: selectedCategoryId,
+        date,
+        notes: notes.trim() || undefined,
+        currency,
+        tags: tags.length > 0 ? tags : undefined,
+        accountId,
+      });
+    } finally {
+      submitLock.current = false;
+    }
   };
 
   return (
@@ -186,7 +226,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
             value={amount}
             onChange={(val) => setAmount(val)}
           />
-          {errors.amount ? <p className="text-xs text-destructive">{errors.amount}</p> : null}
+          {errors.amount ? (
+            <p className="text-xs text-destructive">{errors.amount}</p>
+          ) : null}
         </div>
 
         <div className="space-y-1.5">
@@ -198,7 +240,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
             max={todayISO()}
             required
           />
-          {errors.date ? <p className="text-xs text-destructive">{errors.date}</p> : null}
+          {errors.date ? (
+            <p className="text-xs text-destructive">{errors.date}</p>
+          ) : null}
         </div>
 
         <div className="space-y-1.5 sm:col-span-2">
@@ -206,35 +250,20 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
           <Select
             id="tx-account"
             value={accountId}
-            onValueChange={() => {}}
-            disabled
-            placeholder="Pilih Pocket aktif dari navigasi"
-            options={selectedAccount ? [{
-              value: selectedAccount.id,
-              label: `${selectedAccount.name}${selectedAccount.ownership === "shared" ? ` · Shared by ${selectedAccount.owner?.name ?? "owner"}` : ""}`,
-            }] : []}
-          />
-          <p className="text-xs text-muted-foreground">Sumber transaksi mengikuti Pocket aktif di navigasi.</p>
-          {errors.accountId ? <p className="text-xs text-destructive">{errors.accountId}</p> : null}
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="tx-currency">Transaction currency</Label>
-          <Select
-            id="tx-currency"
-            value={currency}
-            onValueChange={() => {}}
-            options={[
-              {
-                value: CURRENCIES[currency].code,
-                label: `${CURRENCIES[currency].code} (${CURRENCIES[currency].symbol})`,
-              },
-            ]}
-            disabled
+            onValueChange={setAccountId}
+            placeholder="Pilih Pocket"
+            options={writableAccounts.map((account) => ({
+              value: account.id,
+              label: `${account.name}${account.ownership === "shared" ? ` · Shared by ${account.owner?.name ?? "owner"}` : ""}`,
+            }))}
           />
           <p className="text-xs text-muted-foreground">
-            Untuk saat ini pencatatan transaksi menggunakan Rupiah Indonesia.
+            Default mengikuti Pocket aktif. Currency:{" "}
+            <strong>{currency}</strong>.
           </p>
+          {errors.accountId ? (
+            <p className="text-xs text-destructive">{errors.accountId}</p>
+          ) : null}
         </div>
 
         <div className="space-y-1.5 sm:col-span-2">
@@ -263,60 +292,70 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
           ) : null}
         </div>
 
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="tx-tags">Tags (optional)</Label>
-          {tags.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 mb-1.5">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    aria-label={`Remove tag ${tag}`}
-                    onClick={() => removeTag(tag)}
-                    className="hover:text-foreground transition-colors"
+        <details
+          className="sm:col-span-2 rounded-xl border p-3"
+          open={!!initial && tags.length > 0}
+        >
+          <summary className="cursor-pointer text-sm font-semibold">
+            Detail tambahan
+          </summary>
+          <div className="mt-3 space-y-1.5">
+            <Label htmlFor="tx-tags">Tags (optional)</Label>
+            {tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          ) : null}
-          <div className="relative">
-            <Input
-              id="tx-tags"
-              placeholder="Add tag..."
-              value={tagInput}
-              onChange={handleTagChange}
-              onKeyDown={handleTagKeyDown}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-              autoComplete="off"
-            />
-            {showSuggestions && tagSuggestions.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
-                {tagSuggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      addTag(suggestion);
-                      setShowSuggestions(false);
-                    }}
-                    className="w-full px-3 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground first:rounded-t-md last:rounded-b-md"
-                  >
-                    {suggestion}
-                  </button>
+                    {tag}
+                    <button
+                      type="button"
+                      aria-label={`Remove tag ${tag}`}
+                      onClick={() => removeTag(tag)}
+                      className="hover:text-foreground transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
                 ))}
               </div>
-            )}
+            ) : null}
+            <div className="relative">
+              <Input
+                id="tx-tags"
+                placeholder="Add tag..."
+                value={tagInput}
+                onChange={handleTagChange}
+                onKeyDown={handleTagKeyDown}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                autoComplete="off"
+              />
+              {showSuggestions && tagSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
+                  {tagSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        addTag(suggestion);
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground first:rounded-t-md last:rounded-b-md"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Press Enter or comma to add a tag.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">Press Enter or comma to add a tag.</p>
-        </div>
+        </details>
 
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="tx-notes">Notes (optional)</Label>
@@ -331,7 +370,12 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ initial, onSub
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={submitting}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={submitting} className="gap-2">

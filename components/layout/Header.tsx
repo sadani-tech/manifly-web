@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Crown, LogOut, UserCircle } from "lucide-react";
+import { ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { BrandMark } from "@/components/shared/Logo";
 import { ActivePocketSwitcher } from "@/components/layout/ActivePocketSwitcher";
@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useCategoryStore } from "@/store/categoryStore";
 import { useAccountStore } from "@/store/accountStore";
+import { apiAssetUrl } from "@/lib/api";
 
 function titleForPath(pathname: string): string {
   const match = NAV_ITEMS.find(
@@ -102,9 +103,14 @@ export const Header: React.FC = () => {
               onClick={() => setProfileOpen((current) => !current)}
               className="focus-ring group flex items-center gap-2 rounded-xl p-0.5 pr-1 transition-colors hover:bg-muted"
             >
-              <div className="neo-sticker flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-lime text-xs font-black text-brand-navy transition-transform group-hover:-rotate-3 group-hover:scale-105">
-                {getInitials(user.name)}
-              </div>
+              {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={apiAssetUrl(user.avatarUrl) ?? ""} alt="" className="neo-sticker h-9 w-9 shrink-0 rounded-xl object-cover transition-transform group-hover:-rotate-3 group-hover:scale-105" />
+              ) : (
+                <div className="neo-sticker flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-lime text-xs font-black text-brand-navy transition-transform group-hover:-rotate-3 group-hover:scale-105">
+                  {getInitials(user.name)}
+                </div>
+              )}
               <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate">
                 {user.name}
               </span>
@@ -136,11 +142,11 @@ export const Header: React.FC = () => {
                 </Link>
                 <Link
                   role="menuitem"
-                  href="/settings/membership"
+                  href="/settings"
                   onClick={() => setProfileOpen(false)}
                   className="focus-ring flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-muted"
                 >
-                  <Crown className="h-4 w-4" /> Membership
+                  <Settings className="h-4 w-4" /> Settings
                 </Link>
                 <button
                   type="button"

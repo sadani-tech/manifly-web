@@ -36,7 +36,9 @@ function handleStaleSession(): void {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(options.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string>),
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -75,6 +77,8 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  avatarUrl?: string | null;
+  avatarVersion?: number;
 }
 
 export interface AuthResponse {
@@ -125,7 +129,20 @@ export const profileApi = {
       body: JSON.stringify({ oldPassword, newPassword }),
     }),
   deleteAccount: () => request<void>("/users/account", { method: "DELETE" }),
+  uploadAvatar: (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return request<AuthUser>("/profile/avatar", { method: "POST", body });
+  },
+  deleteAvatar: () =>
+    request<AuthUser>("/profile/avatar", { method: "DELETE" }),
 };
+
+export function apiAssetUrl(path?: string | null): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${API_URL.replace(/\/api\/?$/, "")}${path}`;
+}
 
 // ── Budgets ───────────────────────────────────────────────────────────────────
 
@@ -460,11 +477,28 @@ export interface MembershipSnapshot {
   pricingNotice: string;
 }
 
+export interface EffectiveEntitlement {
+  capability: string;
+  limit: number | null;
+  unlimited: boolean;
+  usage: number;
+  upgradeRequired: boolean;
+}
+
+export interface EffectiveEntitlementsSnapshot {
+  plan: MembershipSnapshot["plan"];
+  sourcePlanVersion: string;
+  paymentAvailable: boolean;
+  entitlements: Record<string, EffectiveEntitlement>;
+}
+
 export const membershipApi = {
   get: () => request<MembershipSnapshot>("/membership"),
   plans: () => request<MembershipPlanSummary[]>("/membership/plans"),
   addons: () => request<MembershipAddonSummary[]>("/membership/addons"),
   usage: () => request<MembershipUsage[]>("/membership/usage"),
+  entitlements: () =>
+    request<EffectiveEntitlementsSnapshot>("/membership/entitlements"),
   updateAddon: (code: MembershipAddonSummary["code"], quantity: number) =>
     request<MembershipSnapshot>(`/membership/addons/${code}`, {
       method: "PUT",
@@ -588,16 +622,19 @@ export const billingApi = {
     requestedAmount: number;
     reason: string;
   }) =>
-    request<{ id: string; status: string; message: string }>("/billing/refund-requests", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+    request<{ id: string; status: string; message: string }>(
+      "/billing/refund-requests",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+    ),
 };
 
 // ── Backup ────────────────────────────────────────────────────────────────────
 
 export interface BackupData {
-  version: 2 | 3 | 4;
+  version: 2 | 3 | 4 | 5;
   exportedAt: string;
   transactions: ApiTransaction[];
   categories: ApiCategory[];
@@ -609,6 +646,13 @@ export interface BackupData {
   accountShares?: ApiAccountShare[];
   transfers?: ApiTransfer[];
   smartRules?: ApiSmartRule[];
+  goals?: ApiGoal[];
+  goalContributions?: ApiGoalContribution[];
+  forecastScenarios?: unknown[];
+  subscriptions?: ApiTrackedSubscription[];
+  netWorthItems?: ApiNetWorthItem[];
+  netWorthSnapshots?: unknown[];
+  avatar?: { mimeType: string; contentBase64: string; version: number } | null;
   whatsappNumbers?: Array<{
     phoneMasked: string;
     label: string;
@@ -685,6 +729,10 @@ export interface ApiAccount {
   icon: string | null;
   isDefault: boolean;
   archivedAt: string | null;
+  restrictionReason?: string | null;
+  restrictionGraceEndsAt?: string | null;
+  restrictedAt?: string | null;
+  readOnly?: boolean;
   ownership: "owned" | "shared";
   role: AccountRole;
   shareId: string | null;
@@ -941,6 +989,251 @@ export const recurringApi = {
     }),
   delete: (id: string) =>
     request<void>(`/recurring/${id}`, { method: "DELETE" }),
+};
+
+// ── Planning v1.9 ─────────────────────────────────────────────────────────
+
+export type GoalStatus = "active" | "paused" | "completed" | "cancelled";
+
+export interface ApiGoalContribution {
+  id: string;
+  amount: number;
+  kind: "add" | "subtract" | "correction";
+  date: string;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface ApiGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currency: string;
+  targetDate: string | null;
+  icon: string | null;
+  priority: number;
+  accountId: string | null;
+  status: GoalStatus;
+  reminderEnabled: boolean;
+  progress: number;
+  remaining: number;
+  percentage: number;
+  neededWeekly: number | null;
+  neededMonthly: number | null;
+  contributions: ApiGoalContribution[];
+}
+
+export const goalsApi = {
+  list: () => request<ApiGoal[]>("/goals"),
+  create: (data: {
+    name: string;
+    targetAmount: number;
+    currency: string;
+    targetDate?: string;
+    icon?: string;
+    priority?: number;
+    accountId?: string;
+    reminderEnabled?: boolean;
+  }) =>
+    request<ApiGoal>("/goals", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<ApiGoal>) =>
+    request<ApiGoal>(`/goals/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  contribute: (
+    id: string,
+    data: {
+      amount: number;
+      kind: "add" | "subtract" | "correction";
+      date: string;
+      idempotencyKey: string;
+      notes?: string;
+      sourceAccountId?: string;
+    },
+  ) =>
+    request<ApiGoalContribution>(`/goals/${id}/contributions`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+};
+
+export interface ApiForecast {
+  horizon: 30 | 60 | 90;
+  currency: string;
+  accountId: string | null;
+  generatedAt: string;
+  startingBalance: number;
+  endingBalance: number;
+  lowestBalance: number;
+  negativeRisk: boolean;
+  dataQuality: { level: "low" | "medium" | "high"; transactionCount: number };
+  assumptions: string[];
+  points: Array<{
+    date: string;
+    balance: number;
+    confirmedIncome: number;
+    confirmedExpense: number;
+    estimatedIncome: number;
+    estimatedExpense: number;
+    events: string[];
+  }>;
+}
+
+export const forecastApi = {
+  get: (
+    horizon: 30 | 60 | 90 = 30,
+    accountId?: string,
+    scenarioId?: string,
+  ) => {
+    const params = new URLSearchParams({ horizon: String(horizon) });
+    if (accountId) params.set("accountId", accountId);
+    if (scenarioId) params.set("scenarioId", scenarioId);
+    return request<ApiForecast>(`/forecast?${params}`);
+  },
+  createScenario: (data: {
+    horizon: 30 | 60 | 90;
+    accountId?: string;
+    overrides: Record<string, number>;
+  }) =>
+    request<{ id: string; expiresAt: string }>("/forecast/scenarios", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  deleteScenario: (id: string) =>
+    request<void>(`/forecast/scenarios/${id}`, { method: "DELETE" }),
+};
+
+export interface PlanningAssistantAnswer {
+  answer: string;
+  generatedAt: string;
+  disclosure: string;
+}
+
+export const planningAssistantApi = {
+  ask: (question: string, consentAccepted: boolean) =>
+    request<PlanningAssistantAnswer>("/planning/assistant", {
+      method: "POST",
+      body: JSON.stringify({ question, consentAccepted }),
+    }),
+};
+
+export interface ApiTrackedSubscription {
+  id: string;
+  merchant: string;
+  amount: number;
+  currency: string;
+  frequency: "weekly" | "monthly" | "yearly" | "custom";
+  intervalDays: number | null;
+  nextChargeAt: string;
+  accountId: string;
+  categoryId: string | null;
+  status: "active" | "paused" | "cancelled";
+  reminderEnabled: boolean;
+  reminderLeadDays?: number;
+  monthlyCost?: number;
+  annualCost?: number;
+}
+
+export interface SubscriptionCandidate extends Omit<
+  ApiTrackedSubscription,
+  "id" | "status" | "reminderEnabled"
+> {
+  occurrences: number;
+  possiblePriceIncrease: boolean;
+}
+
+export const trackedSubscriptionsApi = {
+  list: () => request<ApiTrackedSubscription[]>("/subscriptions"),
+  create: (data: Omit<ApiTrackedSubscription, "id" | "status">) =>
+    request<ApiTrackedSubscription>("/subscriptions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id: string, data: Partial<ApiTrackedSubscription>) =>
+    request<ApiTrackedSubscription>(`/subscriptions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  detect: () =>
+    request<SubscriptionCandidate[]>("/subscriptions/detect", {
+      method: "POST",
+    }),
+};
+
+export interface ApiNetWorthItem {
+  id: string;
+  type: "asset" | "liability";
+  name: string;
+  kind: string;
+  value: number;
+  currency: string;
+  valuedAt: string;
+  excluded: boolean;
+  notes: string | null;
+}
+
+export interface ApiNetWorth {
+  date: string;
+  currency: string;
+  assets: number;
+  liabilities: number;
+  netWorth: number;
+  breakdown: Record<string, number>;
+  items: ApiNetWorthItem[];
+  history: Array<{ date: string; netWorth: number }>;
+  excludedCurrencies: string[];
+  provenance: string;
+}
+
+export const netWorthApi = {
+  get: (currency = "IDR") =>
+    request<ApiNetWorth>(`/net-worth?currency=${currency}`),
+  createItem: (
+    type: "assets" | "liabilities",
+    data: Omit<ApiNetWorthItem, "id" | "type">,
+  ) =>
+    request<ApiNetWorthItem>(`/net-worth/${type}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateItem: (id: string, data: Partial<ApiNetWorthItem>) =>
+    request<ApiNetWorthItem>(`/net-worth/items/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  deleteItem: (id: string) =>
+    request<void>(`/net-worth/items/${id}`, { method: "DELETE" }),
+};
+
+export interface ApiAnalyticsPeriod {
+  period: "1m" | "3m" | "6m" | "12m";
+  granularity: "day" | "month";
+  from: string;
+  to: string;
+  summary: {
+    totalIncome: number;
+    totalExpense: number;
+    net: number;
+    transactionCount: number;
+  };
+  comparison: {
+    from: string;
+    to: string;
+    totalIncome: number;
+    totalExpense: number;
+    net: number;
+    transactionCount: number;
+  };
+  buckets: Array<{ key: string; income: number; expense: number; net: number }>;
+}
+
+export const analyticsApi = {
+  get: (period: ApiAnalyticsPeriod["period"], accountId?: string) => {
+    const params = new URLSearchParams({ period });
+    if (accountId) params.set("accountId", accountId);
+    return request<ApiAnalyticsPeriod>(`/analytics?${params}`);
+  },
 };
 
 // ── Shared Wallet ─────────────────────────────────────────────────────────────
