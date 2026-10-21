@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   BadgePlus,
+  Bot,
   Check,
   Clock3,
   Crown,
@@ -13,6 +14,8 @@ import {
   Mic2,
   Send,
   Smartphone,
+  Tags,
+  WalletCards,
 } from "lucide-react";
 import {
   billingApi,
@@ -22,6 +25,7 @@ import {
   type MembershipPlanSummary,
   type MembershipSnapshot,
   type MembershipUsage,
+  type EffectiveEntitlementsSnapshot,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { BillingCheckoutDialog } from "@/components/membership/BillingCheckoutDialog";
@@ -40,9 +44,15 @@ const ENTITLEMENTS = [
     label: "Pesan proaktif / bulan",
     icon: Send,
   },
+  { key: "budgets.active", label: "Budget aktif / bulan", icon: WalletCards },
+  { key: "categories.custom_active", label: "Kategori custom", icon: Tags },
+  { key: "accounts.owned_active", label: "Pocket milik sendiri", icon: BadgePlus },
+  { key: "ai.assistant", label: "AI Assistant", icon: Bot },
 ] as const;
 
 function formatEntitlement(key: string, value: number) {
+  if (key === "ai.assistant") return value > 0 ? "Aktif" : "Tidak";
+  if (value < 0) return "Unlimited";
   if (key === "whatsapp.voice_seconds")
     return `${Math.floor(value / 60)} menit`;
   return value.toLocaleString("id-ID");
@@ -68,6 +78,7 @@ export default function MembershipPage() {
   );
   const [error, setError] = useState<string | null>(null);
   const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
+  const [effective, setEffective] = useState<EffectiveEntitlementsSnapshot | null>(null);
   const [selectedPlan, setSelectedPlan] =
     useState<MembershipPlanSummary | null>(null);
   const [selectedAddonQuantity, setSelectedAddonQuantity] = useState(0);
@@ -86,6 +97,7 @@ export default function MembershipPage() {
       membershipApi.plans(),
       membershipApi.addons(),
       membershipApi.usage(),
+      membershipApi.entitlements(),
       billingApi.status().catch(() => ({
         checkoutEnabled: false,
         ready: false,
@@ -94,11 +106,12 @@ export default function MembershipPage() {
       })),
     ])
       .then(
-        ([current, availablePlans, availableAddons, currentUsage, status]) => {
+        ([current, availablePlans, availableAddons, currentUsage, resourceEntitlements, status]) => {
         setMembership(current);
         setPlans(availablePlans);
         setAddons(availableAddons);
         setUsage(currentUsage);
+        setEffective(resourceEntitlements);
         setBillingStatus(status);
         const requested = availablePlans.find(
           (plan) => plan.code === requestedPlan && plan.priceMonthly > 0,
@@ -133,8 +146,8 @@ export default function MembershipPage() {
             Plan yang tumbuh bersamamu
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Bandingkan entitlement WhatsApp dan pantau pemakaian. Semua fitur
-            finansial web tetap tersedia pada setiap plan.
+            Bandingkan entitlement WhatsApp dan pantau pemakaian fitur sesuai
+            plan aktifmu.
           </p>
         </div>
         <Link
@@ -175,6 +188,24 @@ export default function MembershipPage() {
         </p>
       )}
 
+      {effective ? (
+        <section className="rounded-[1.65rem] border bg-card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><h2 className="font-black">Pemakaian fitur web</h2><p className="text-xs text-muted-foreground">Sumber: {effective.sourcePlanVersion}</p></div>
+            {!effective.paymentAvailable ? <span className="rounded-full bg-muted px-3 py-1 text-xs">Checkout sedang nonaktif</span> : null}
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {Object.values(effective.entitlements).map((item) => (
+              <div key={item.capability} className="rounded-xl bg-muted/55 p-3">
+                <p className="text-xs text-muted-foreground">{item.capability.replace(/[._]/g, " ")}</p>
+                <p className="mt-1 font-bold">{item.capability === "ai.assistant" ? (item.limit === 1 ? "Aktif" : "Tidak aktif") : `${item.usage} / ${item.unlimited ? "Unlimited" : item.limit}`}</p>
+                {item.upgradeRequired ? <Link href="#plans" className="mt-1 inline-block text-xs font-semibold underline">Lihat upgrade</Link> : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {loading ? (
         <div
           className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
@@ -188,7 +219,7 @@ export default function MembershipPage() {
           ))}
         </div>
       ) : (
-        <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div id="plans" className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {plans.map((plan) => {
             const active = membership?.plan.code === plan.code;
             const recommended = recommendedPlan?.code === plan.code && !active;

@@ -62,11 +62,21 @@ export default function TransactionsPage() {
   // then strip the query so a refresh doesn't reopen it. Read from
   // window.location to avoid needing a useSearchParams Suspense boundary.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (new URLSearchParams(window.location.search).get("add") === "1" && canWrite) {
-      setAdding(true);
-      window.history.replaceState(null, "", "/transactions");
-    }
+    if (typeof window === "undefined" || !canWrite) return;
+    const consume = () => {
+      if (new URLSearchParams(window.location.search).get("add") === "1") {
+        window.history.replaceState(null, "", "/transactions");
+        setAdding(true);
+      }
+    };
+    const open = () => setAdding(true);
+    consume();
+    window.addEventListener("popstate", consume);
+    window.addEventListener("manifly:add-transaction", open);
+    return () => {
+      window.removeEventListener("popstate", consume);
+      window.removeEventListener("manifly:add-transaction", open);
+    };
   }, [canWrite]);
 
   const handleSubmit = async (values: TransactionFormValues) => {

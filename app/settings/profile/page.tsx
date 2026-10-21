@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, User, KeyRound, Trash2 } from "lucide-react";
+import { Camera, Loader2, User, KeyRound, Trash2, X } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useCategoryStore } from "@/store/categoryStore";
-import { profileApi, ApiError } from "@/lib/api";
+import { profileApi, ApiError, apiAssetUrl } from "@/lib/api";
 
 function getInitials(name: string): string {
   return name
@@ -22,6 +22,41 @@ export default function ProfilePage() {
   const { user, setAuth, token, logout } = useAuthStore();
   const clearTx = useTransactionStore((s) => s.clearAll);
   const clearCat = useCategoryStore((s) => s.clearAll);
+  const avatarInput = useRef<HTMLInputElement>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+
+  const updateAvatar = async (file?: File) => {
+    if (!file) return;
+    setAvatarError("");
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("Ukuran avatar maksimal 5 MB");
+      return;
+    }
+    setAvatarLoading(true);
+    try {
+      const updated = await profileApi.uploadAvatar(file);
+      if (token) setAuth(updated, token);
+    } catch (error) {
+      setAvatarError(error instanceof ApiError ? error.message : "Avatar gagal diunggah");
+    } finally {
+      setAvatarLoading(false);
+      if (avatarInput.current) avatarInput.current.value = "";
+    }
+  };
+
+  const removeAvatar = async () => {
+    setAvatarLoading(true);
+    setAvatarError("");
+    try {
+      const updated = await profileApi.deleteAvatar();
+      if (token) setAuth(updated, token);
+    } catch (error) {
+      setAvatarError(error instanceof ApiError ? error.message : "Avatar gagal dihapus");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
 
   // ── Edit name ──────────────────────────────────────────────────────────────
   const [nameValue, setNameValue] = useState(user?.name ?? "");
@@ -106,12 +141,28 @@ export default function ProfilePage() {
     <div className="max-w-xl space-y-8">
       {/* Avatar + info */}
       <section className="flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold shrink-0">
-          {getInitials(user.name)}
+        <div className="relative h-20 w-20 shrink-0">
+          {user.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={apiAssetUrl(user.avatarUrl) ?? ""} alt="Avatar profil" className="h-20 w-20 rounded-2xl object-cover" />
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-primary-foreground">
+              {getInitials(user.name)}
+            </div>
+          )}
+          {avatarLoading ? <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-white"><Loader2 className="h-5 w-5 animate-spin" /></span> : null}
         </div>
         <div>
           <p className="text-lg font-semibold">{user.name}</p>
           <p className="text-sm text-muted-foreground">{user.email}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <input ref={avatarInput} type="file" hidden accept="image/jpeg,image/png,image/webp" onChange={(event) => void updateAvatar(event.target.files?.[0])} />
+            <button type="button" disabled={avatarLoading} onClick={() => avatarInput.current?.click()} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold hover:bg-accent">
+              <Camera className="h-3.5 w-3.5" /> Ganti avatar
+            </button>
+            {user.avatarUrl ? <button type="button" disabled={avatarLoading} onClick={() => void removeAvatar()} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs text-destructive hover:bg-destructive/10"><X className="h-3.5 w-3.5" /> Hapus</button> : null}
+          </div>
+          {avatarError ? <p className="mt-2 text-xs text-destructive">{avatarError}</p> : null}
         </div>
       </section>
 

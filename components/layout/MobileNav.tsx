@@ -20,6 +20,8 @@ import {
   WandSparkles,
   UserCircle,
   X,
+  Target,
+  Landmark,
   type LucideIcon,
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
@@ -40,6 +42,8 @@ const ICONS: Record<string, LucideIcon> = {
   Settings,
   WalletCards,
   WandSparkles,
+  Target,
+  Landmark,
 };
 
 // A bottom bar fits ~5 slots comfortably on a phone. Show the four most-used

@@ -59,8 +59,11 @@ export function RecurringModal({ open, onClose, editing }: Props) {
   const [error, setError] = useState<string | null>(null);
   const accounts = useAccountStore((state) => state.accounts);
   const activeAccountId = useAccountStore((state) => state.activeAccountId);
-  const activeAccount = accounts.find((account) => account.id === activeAccountId);
-  const selectedAccount = accounts.find((account) => account.id === form.accountId) ?? activeAccount;
+  const activeAccount = accounts.find(
+    (account) => account.id === activeAccountId,
+  );
+  const selectedAccount =
+    accounts.find((account) => account.id === form.accountId) ?? activeAccount;
 
   useEffect(() => {
     if (editing) {
@@ -77,7 +80,8 @@ export function RecurringModal({ open, onClose, editing }: Props) {
     } else {
       setForm({
         ...emptyForm(),
-        accountId: activeAccount?.role !== "viewer" ? activeAccount?.id ?? "" : "",
+        accountId:
+          activeAccount?.role !== "viewer" ? (activeAccount?.id ?? "") : "",
       });
     }
     setError(null);
@@ -86,7 +90,10 @@ export function RecurringModal({ open, onClose, editing }: Props) {
   if (!open) return null;
 
   const filteredCategories = categories.filter(
-    (c) => c.type === form.type || c.type === "both",
+    (c) =>
+      !c.archivedAt &&
+      !c.readOnly &&
+      (c.type === form.type || c.type === "both"),
   );
 
   async function handleSubmit(e: React.FormEvent) {
@@ -138,171 +145,180 @@ export function RecurringModal({ open, onClose, editing }: Props) {
       onClose={onClose}
       title={editing ? "Ubah transaksi rutin" : "Transaksi rutin baru"}
     >
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {/* Type */}
-          <div>
-            <label className={labelCls}>Type</label>
-            <div className="flex gap-2">
-              {(["income", "expense"] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() =>
-                    setForm((f) => ({ ...f, type: t, categoryId: "" }))
-                  }
-                  className={cn(
-                    "flex-1 rounded-md border py-1.5 text-sm font-medium transition-colors",
-                    form.type === t
-                      ? t === "income"
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
-                        : "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-                      : "border-border text-muted-foreground hover:bg-accent",
-                  )}
-                >
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Amount */}
-          <div>
-            <label htmlFor="amount" className={labelCls}>
-              Amount
-            </label>
-            <CurrencyInput
-              id="amount"
-              placeholder="0"
-              value={form.amount}
-              onChange={(val) => setForm((f) => ({ ...f, amount: val }))}
-              className={inputCls}
-            />
-          </div>
-
-          {/* Category */}
-          <div>
-            <label htmlFor="category" className={labelCls}>
-              Category
-            </label>
-            <Select
-              id="category"
-              value={form.categoryId}
-              onValueChange={(categoryId) =>
-                setForm((f) => ({ ...f, categoryId }))
-              }
-              options={[
-                { value: "", label: "— None —" },
-                ...filteredCategories.map((category) => ({
-                  value: category.id,
-                  label: category.name,
-                })),
-              ]}
-            />
-          </div>
-
-          {/* Frequency */}
-          <div>
-            <label htmlFor="recurring-account" className={labelCls}>Account / Pocket</label>
-            <Select
-              id="recurring-account"
-              value={form.accountId}
-              onValueChange={() => {}}
-              disabled
-              placeholder="Pilih Pocket aktif dari navigasi"
-              options={selectedAccount ? [{ value: selectedAccount.id, label: `${selectedAccount.name}${selectedAccount.ownership === "shared" ? " · Shared" : ""}` }] : []}
-            />
-          </div>
-
-          {/* Frequency */}
-          <div>
-            <label htmlFor="frequency" className={labelCls}>
-              Frequency
-            </label>
-            <Select
-              id="frequency"
-              value={form.frequency}
-              onValueChange={(frequency) =>
-                setForm((f) => ({
-                  ...f,
-                  frequency: frequency as FormState["frequency"],
-                }))
-              }
-              options={FREQUENCIES.map((frequency) => ({
-                value: frequency.value,
-                label: frequency.label,
-              }))}
-            />
-          </div>
-
-          {/* Start / End Dates */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label htmlFor="startDate" className={labelCls}>
-                Start Date
-              </label>
-              <DatePicker
-                id="startDate"
-                value={form.startDate}
-                onValueChange={(startDate) =>
-                  setForm((f) => ({ ...f, startDate }))
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        {/* Type */}
+        <div>
+          <label className={labelCls}>Type</label>
+          <div className="flex gap-2">
+            {(["income", "expense"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() =>
+                  setForm((f) => ({ ...f, type: t, categoryId: "" }))
                 }
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="endDate" className={labelCls}>
-                End Date <span className="text-muted-foreground">(opt.)</span>
-              </label>
-              <DatePicker
-                id="endDate"
-                value={form.endDate}
-                min={form.startDate}
-                onValueChange={(endDate) =>
-                  setForm((f) => ({ ...f, endDate }))
-                }
-                placeholder="Opsional"
-              />
-            </div>
+                className={cn(
+                  "flex-1 rounded-md border py-1.5 text-sm font-medium transition-colors",
+                  form.type === t
+                    ? t === "income"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                      : "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                    : "border-border text-muted-foreground hover:bg-accent",
+                )}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Notes */}
+        {/* Amount */}
+        <div>
+          <label htmlFor="amount" className={labelCls}>
+            Amount
+          </label>
+          <CurrencyInput
+            id="amount"
+            placeholder="0"
+            value={form.amount}
+            onChange={(val) => setForm((f) => ({ ...f, amount: val }))}
+            className={inputCls}
+          />
+        </div>
+
+        {/* Category */}
+        <div>
+          <label htmlFor="category" className={labelCls}>
+            Category
+          </label>
+          <Select
+            id="category"
+            value={form.categoryId}
+            onValueChange={(categoryId) =>
+              setForm((f) => ({ ...f, categoryId }))
+            }
+            options={[
+              { value: "", label: "— None —" },
+              ...filteredCategories.map((category) => ({
+                value: category.id,
+                label: category.name,
+              })),
+            ]}
+          />
+        </div>
+
+        {/* Frequency */}
+        <div>
+          <label htmlFor="recurring-account" className={labelCls}>
+            Account / Pocket
+          </label>
+          <Select
+            id="recurring-account"
+            value={form.accountId}
+            onValueChange={() => {}}
+            disabled
+            placeholder="Pilih Pocket aktif dari navigasi"
+            options={
+              selectedAccount
+                ? [
+                    {
+                      value: selectedAccount.id,
+                      label: `${selectedAccount.name}${selectedAccount.ownership === "shared" ? " · Shared" : ""}`,
+                    },
+                  ]
+                : []
+            }
+          />
+        </div>
+
+        {/* Frequency */}
+        <div>
+          <label htmlFor="frequency" className={labelCls}>
+            Frequency
+          </label>
+          <Select
+            id="frequency"
+            value={form.frequency}
+            onValueChange={(frequency) =>
+              setForm((f) => ({
+                ...f,
+                frequency: frequency as FormState["frequency"],
+              }))
+            }
+            options={FREQUENCIES.map((frequency) => ({
+              value: frequency.value,
+              label: frequency.label,
+            }))}
+          />
+        </div>
+
+        {/* Start / End Dates */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="notes" className={labelCls}>
-              Notes <span className="text-muted-foreground">(opt.)</span>
+            <label htmlFor="startDate" className={labelCls}>
+              Start Date
             </label>
-            <input
-              id="notes"
-              type="text"
-              placeholder="e.g. Gaji bulanan"
-              value={form.notes}
-              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-              className={inputCls}
+            <DatePicker
+              id="startDate"
+              value={form.startDate}
+              onValueChange={(startDate) =>
+                setForm((f) => ({ ...f, startDate }))
+              }
+              required
             />
           </div>
-
-          {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
-
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-md border border-border py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : editing ? "Save Changes" : "Create"}
-            </button>
+          <div>
+            <label htmlFor="endDate" className={labelCls}>
+              End Date <span className="text-muted-foreground">(opt.)</span>
+            </label>
+            <DatePicker
+              id="endDate"
+              value={form.endDate}
+              min={form.startDate}
+              onValueChange={(endDate) => setForm((f) => ({ ...f, endDate }))}
+              placeholder="Opsional"
+            />
           </div>
-        </form>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label htmlFor="notes" className={labelCls}>
+            Notes <span className="text-muted-foreground">(opt.)</span>
+          </label>
+          <input
+            id="notes"
+            type="text"
+            placeholder="e.g. Gaji bulanan"
+            value={form.notes}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            className={inputCls}
+          />
+        </div>
+
+        {error && (
+          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <div className="flex gap-3 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-md border border-border py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex-1 rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : editing ? "Save Changes" : "Create"}
+          </button>
+        </div>
+      </form>
     </Modal>
   );
 }

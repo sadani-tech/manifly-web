@@ -103,7 +103,10 @@ export default function BudgetPage() {
   }, [month, fetchBudgets]);
 
   const expenseCategories = categories.filter(
-    (c) => c.type === "expense" || c.type === "both",
+    (c) =>
+      !c.archivedAt &&
+      !c.readOnly &&
+      (c.type === "expense" || c.type === "both"),
   );
 
   function getSpent(categoryId: string) {
