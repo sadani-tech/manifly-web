@@ -163,12 +163,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       isIncome ? "text-income" : "text-expense",
                     )}
                   >
-                    {fmtSigned(tx.amount, tx.type)}
-                    {tx.currency && tx.currency !== "IDR" && (
-                      <span className="ml-1 text-xs font-normal text-muted-foreground">
-                        ≈ {tx.currency}
-                      </span>
-                    )}
+                    {fmtSigned(tx.amount, tx.type, tx.currency ?? undefined)}
                   </span>
                 </div>
 
@@ -330,12 +325,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       isIncome ? "text-income" : "text-expense",
                     )}
                   >
-                    {fmtSigned(tx.amount, tx.type)}
-                    {tx.currency && tx.currency !== "IDR" && (
-                      <span className="ml-1 text-xs text-muted-foreground">
-                        ≈ {tx.currency}
-                      </span>
-                    )}
+                    {fmtSigned(tx.amount, tx.type, tx.currency ?? undefined)}
                   </td>
                   {!readOnly && <td className="px-3 py-2.5 align-middle text-right">
                     <div className="flex justify-end gap-1">
@@ -365,8 +355,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       </div>
 
       {pageCount > 1 ? (
-        <div className="flex items-center justify-between border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          <span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2.5 text-xs text-muted-foreground sm:px-4">
+          <span className="min-w-0 truncate">
             Page {safePage + 1} of {pageCount} · {sorted.length} transactions
           </span>
           <div className="flex gap-1">

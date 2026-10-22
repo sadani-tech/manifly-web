@@ -19,6 +19,7 @@ import { BalanceHero } from "@/components/dashboard/BalanceHero";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAuthStore } from "@/store/authStore";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useLedgerCurrency } from "@/hooks/useLedgerCurrency";
 import { FlowBuddy } from "@/components/shared/FlowBuddy";
 import { financialHealthApi, type ApiFinancialHealth } from "@/lib/api";
 import { useAccountStore } from "@/store/accountStore";
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const { summary, expenseByCategory } = useAnalytics({ months: 6 });
   const user = useAuthStore((state) => state.user);
   const { fmt } = useCurrency();
+  const ledgerCurrency = useLedgerCurrency();
   const accounts = useAccountStore((state) => state.accounts);
   const activeAccountId = useAccountStore((state) => state.activeAccountId);
   const activeAccount = accounts.find(
@@ -101,6 +103,7 @@ export default function DashboardPage() {
                   ? -Math.abs(ledgerBalance)
                   : ledgerBalance
                 : summary.totalBalance,
+              { from: ledgerCurrency },
             )}
             transactionCount={summary.transactionCount}
           />
@@ -114,6 +117,7 @@ export default function DashboardPage() {
           <SummaryCard
             label="Total pemasukan"
             amount={summary.totalIncome}
+            from={ledgerCurrency}
             tone="income"
             icon={<ArrowUpRight className="h-4 w-4" />}
             hint="Yang masuk, kita sambut baik-baik"
@@ -121,6 +125,7 @@ export default function DashboardPage() {
           <SummaryCard
             label="Total pengeluaran"
             amount={summary.totalExpense}
+            from={ledgerCurrency}
             tone="expense"
             icon={<ArrowDownLeft className="h-4 w-4" />}
             hint="Yang keluar, tetap kita awasi"

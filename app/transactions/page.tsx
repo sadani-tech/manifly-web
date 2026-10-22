@@ -96,8 +96,8 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6 sm:space-y-7">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <p className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.15em] text-kicker">
             <Sparkles className="h-3.5 w-3.5" /> Jejak uang harian
           </p>
@@ -108,29 +108,31 @@ export default function TransactionsPage() {
             Catatan dari Pocket {activeAccount?.name ?? "aktif"}{activeAccount?.role === "viewer" ? " · hanya lihat" : ""}.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap">
           <Button
             variant="outline"
+            className="min-w-0 px-2 sm:px-4"
             onClick={() => exportCSV(filtered)}
             disabled={filtered.length === 0}
           >
-            <Download className="h-4 w-4" /> CSV
+            <Download className="h-4 w-4 shrink-0" /> <span className="truncate">CSV</span>
           </Button>
           <Button
             variant="outline"
+            className="min-w-0 px-2 sm:px-4"
             onClick={() => exportXLSX(filtered)}
             disabled={filtered.length === 0}
           >
-            <FileSpreadsheet className="h-4 w-4" /> Excel
+            <FileSpreadsheet className="h-4 w-4 shrink-0" /> <span className="truncate">Excel</span>
           </Button>
-          <Button onClick={() => setAdding(true)} disabled={!canWrite}>
-            <Plus className="h-4 w-4" /> Add transaction
+          <Button className="min-w-0 px-2 sm:px-4" onClick={() => setAdding(true)} disabled={!canWrite}>
+            <Plus className="h-4 w-4 shrink-0" /> <span className="truncate">Add transaction</span>
           </Button>
         </div>
       </div>
 
       <Card className="overflow-hidden border-brand-navy/15 bg-card/90">
-        <CardContent className="p-5 sm:p-6">
+        <CardContent className="p-4 sm:p-6">
           <FilterBar />
         </CardContent>
       </Card>

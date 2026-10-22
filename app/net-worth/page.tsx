@@ -7,16 +7,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ApiError, type ApiNetWorth, netWorthApi } from "@/lib/api";
 import { todayISO } from "@/lib/utils";
+import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/constants";
+import type { CurrencyCode } from "@/lib/types";
 
-const money = (value: number, currency: string) =>
-  new Intl.NumberFormat("id-ID", {
+const money = (value: number, currency: string, approx = false) =>
+  `${approx ? "≈ " : ""}${new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(value)}`;
+
+/** "2 hari lalu" untuk mengungkap umur kurs yang dipakai konversi. */
+const rateAge = (observedAt: string | null): string | null => {
+  if (!observedAt) return null;
+  const then = new Date(observedAt).getTime();
+  if (Number.isNaN(then)) return null;
+  const days = Math.floor((Date.now() - then) / 86_400_000);
+  if (days <= 0) return "hari ini";
+  if (days === 1) return "1 hari lalu";
+  return `${days} hari lalu`;
+};
 
 export default function NetWorthPage() {
   const [summary, setSummary] = useState<ApiNetWorth | null>(null);
+  // Net worth mengagregasi seluruh pocket, jadi mata uang pelaporannya dipilih
+  // user di sini (CUR-03) — tidak mengikuti pocket aktif seperti dashboard.
+  const [reportCurrency, setReportCurrency] =
+    useState<CurrencyCode>(DEFAULT_CURRENCY);
   const [type, setType] = useState<"assets" | "liabilities">("assets");
   const [form, setForm] = useState({
     name: "",
@@ -31,7 +48,7 @@ export default function NetWorthPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setSummary(await netWorthApi.get("IDR"));
+      setSummary(await netWorthApi.get(reportCurrency));
       setError("");
     } catch (reason) {
       setError(
@@ -40,7 +57,7 @@ export default function NetWorthPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [reportCurrency]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -53,7 +70,7 @@ export default function NetWorthPage() {
         name: form.name,
         kind: form.kind,
         value: Number(form.value),
-        currency: "IDR",
+        currency: reportCurrency,
         valuedAt: form.valuedAt,
         excluded: false,
         notes: form.notes || null,
@@ -76,14 +93,34 @@ export default function NetWorthPage() {
 
   return (
     <div className="space-y-7">
-      <div>
-        <p className="text-xs font-black uppercase tracking-[.14em] text-kicker">
-          Posisi finansial
-        </p>
-        <h2 className="text-3xl font-black">Net Worth</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Aset dikurangi liability, dengan sumber yang dapat ditelusuri.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[.14em] text-kicker">
+            Posisi finansial
+          </p>
+          <h2 className="text-3xl font-black">Net Worth</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Aset dikurangi liability, dengan sumber yang dapat ditelusuri.
+          </p>
+        </div>
+        <label className="text-xs text-muted-foreground">
+          <span className="mb-1 block font-bold uppercase tracking-widest">
+            Mata uang laporan
+          </span>
+          <select
+            className="h-10 rounded-md border bg-background px-3 text-sm text-foreground"
+            value={reportCurrency}
+            onChange={(event) =>
+              setReportCurrency(event.target.value as CurrencyCode)
+            }
+          >
+            {Object.keys(CURRENCIES).map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       {error ? (
         <p
@@ -100,16 +137,28 @@ export default function NetWorthPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Metric
               label="Total aset"
-              value={money(summary.assets, summary.currency)}
+              value={money(
+                summary.assets,
+                summary.currency,
+                summary.approximate,
+              )}
             />
             <Metric
               label="Total liability"
-              value={money(summary.liabilities, summary.currency)}
+              value={money(
+                summary.liabilities,
+                summary.currency,
+                summary.approximate,
+              )}
               danger
             />
             <Metric
               label="Net worth"
-              value={money(summary.netWorth, summary.currency)}
+              value={money(
+                summary.netWorth,
+                summary.currency,
+                summary.approximate,
+              )}
               danger={summary.netWorth < 0}
             />
             <Metric
@@ -120,6 +169,7 @@ export default function NetWorthPage() {
                       summary.history[summary.history.length - 2].netWorth
                   : 0,
                 summary.currency,
+                summary.approximate,
               )}
             />
           </div>
@@ -134,7 +184,7 @@ export default function NetWorthPage() {
                     {key.replace(/([A-Z])/g, " $1")}
                   </p>
                   <p className="font-semibold">
-                    {money(value, summary.currency)}
+                    {money(value, summary.currency, summary.approximate)}
                   </p>
                 </div>
               ))}
@@ -294,12 +344,34 @@ export default function NetWorthPage() {
         </Card>
       </div>
       {summary ? (
-        <p className="text-xs text-muted-foreground">
-          Snapshot {summary.date}. {summary.provenance}
-          {summary.excludedCurrencies.length
-            ? ` Currency yang belum digabung: ${summary.excludedCurrencies.join(", ")}.`
-            : ""}
-        </p>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <p>
+            Snapshot {summary.date}. {summary.provenance}
+            {summary.excludedCurrencies.length
+              ? ` Currency yang belum digabung: ${summary.excludedCurrencies.join(", ")}.`
+              : ""}
+          </p>
+          {summary.approximate ? (
+            <ul className="space-y-0.5">
+              {summary.convertedCurrencies.map((code) => {
+                const used = summary.rateSnapshot[code];
+                if (!used) return null;
+                const age = rateAge(used.observedAt);
+                return (
+                  <li key={code}>
+                    1 {code} ={" "}
+                    {new Intl.NumberFormat("id-ID", {
+                      maximumFractionDigits: 4,
+                    }).format(used.rate)}{" "}
+                    {summary.currency}
+                    {age ? ` · kurs ${age}` : ""}
+                    {used.source ? ` · ${used.source}` : ""}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

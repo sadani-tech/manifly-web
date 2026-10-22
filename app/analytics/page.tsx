@@ -19,6 +19,7 @@ import { BalanceChart } from "@/components/dashboard/BalanceChart";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useLedgerCurrency } from "@/hooks/useLedgerCurrency";
 import type { Transaction } from "@/lib/types";
 import { analyticsApi, type ApiAnalyticsPeriod } from "@/lib/api";
 import { useAccountStore } from "@/store/accountStore";
@@ -38,6 +39,10 @@ export default function AnalyticsPage() {
   const [serverAnalytics, setServerAnalytics] =
     useState<ApiAnalyticsPeriod | null>(null);
   const { fmt } = useCurrency();
+  const ledgerCurrency = useLedgerCurrency();
+  // Analitik di-scope ke pocket aktif, jadi semua nominal memakai currency
+  // ledger pocket tersebut sebagai sumber konversi.
+  const money = (value: number) => fmt(value, { from: ledgerCurrency });
 
   const cutoff = useMemo(() => {
     const d = new Date();
@@ -167,19 +172,19 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <InsightCard
           label="Saldo bersih"
-          value={fmt(summary.totalBalance)}
+          value={money(summary.totalBalance)}
           tone={summary.totalBalance >= 0 ? "positive" : "negative"}
           icon={<Wallet className="h-4 w-4" />}
         />
         <InsightCard
           label="Pemasukan"
-          value={fmt(summary.totalIncome)}
+          value={money(summary.totalIncome)}
           tone="positive"
           icon={<ArrowUpRight className="h-4 w-4" />}
         />
         <InsightCard
           label="Pengeluaran"
-          value={fmt(summary.totalExpense)}
+          value={money(summary.totalExpense)}
           tone="negative"
           icon={<ArrowDownLeft className="h-4 w-4" />}
         />
@@ -188,7 +193,7 @@ export default function AnalyticsPage() {
           value={
             periodChange === null
               ? "—"
-              : `${periodChange.delta >= 0 ? "+" : ""}${fmt(periodChange.delta)}`
+              : `${periodChange.delta >= 0 ? "+" : ""}${money(periodChange.delta)}`
           }
           delta={
             periodChange === null
@@ -235,7 +240,7 @@ export default function AnalyticsPage() {
                 <span className="font-medium text-foreground">
                   {topCategory.categoryName}
                 </span>{" "}
-                sebesar {fmt(topCategory.total)}
+                sebesar {money(topCategory.total)}
               </p>
             ) : null}
           </CardHeader>
@@ -263,7 +268,7 @@ export default function AnalyticsPage() {
                       <span className="font-medium text-muted-foreground">
                         {tag}
                       </span>
-                      <span>{fmt(total)}</span>
+                      <span>{money(total)}</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                       <div

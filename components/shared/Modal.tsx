@@ -67,7 +67,7 @@ export const Modal: React.FC<ModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className="fixed inset-x-0 bottom-0 top-[4.75rem] z-[60] flex items-end justify-center sm:items-center sm:p-4"
+      className="fixed inset-x-0 bottom-0 top-[calc(4.75rem+env(safe-area-inset-top))] z-[60] flex items-end justify-center sm:items-center sm:p-4"
     >
       <div
         className="absolute inset-0 bg-[#080a07]/65 backdrop-blur-[3px] dark:bg-black/72"

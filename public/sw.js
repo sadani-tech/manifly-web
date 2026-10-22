@@ -16,7 +16,9 @@
  * Bumping CACHE_VERSION wipes old caches on the next activation.
  */
 
-const CACHE_VERSION = "v3"; // bumped for the new Manifly winged-banknote logo / icon set
+// Bump when the manifest or app shell changes so installed PWAs do not keep a
+// stale cache-first manifest after a deployment.
+const CACHE_VERSION = "v4";
 const PRECACHE = `manifly-precache-${CACHE_VERSION}`;
 const RUNTIME = `manifly-runtime-${CACHE_VERSION}`;
 

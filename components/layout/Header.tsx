@@ -44,7 +44,9 @@ export const Header: React.FC = () => {
 
   useEffect(() => {
     if (!profileOpen) return;
-    const closeOnPointer = (event: PointerEvent) => {
+    // Closing on click lets the active pointer finish before the menu is
+    // unmounted, avoiding Chromium's releasePointerCapture race.
+    const closeOnClick = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
         !profileButtonRef.current?.contains(target) &&
@@ -59,10 +61,10 @@ export const Header: React.FC = () => {
         profileButtonRef.current?.focus();
       }
     };
-    document.addEventListener("pointerdown", closeOnPointer);
+    document.addEventListener("click", closeOnClick);
     document.addEventListener("keydown", closeOnEscape);
     return () => {
-      document.removeEventListener("pointerdown", closeOnPointer);
+      document.removeEventListener("click", closeOnClick);
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [profileOpen]);
@@ -77,7 +79,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="glass-surface sticky top-0 z-20 flex h-[4.75rem] items-center justify-between gap-2 border-b border-brand-navy/10 px-4 sm:gap-4 sm:px-6 md:px-8 xl:px-10">
+    <header className="glass-surface sticky top-0 z-20 flex h-[calc(4.75rem+env(safe-area-inset-top))] items-center justify-between gap-2 border-b border-brand-navy/10 px-4 pt-[env(safe-area-inset-top)] sm:gap-4 sm:px-6 md:px-8 md:pt-0 xl:px-10">
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <BrandMark size={36} decorative className="md:hidden" />
         <div className="min-w-0">

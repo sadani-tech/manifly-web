@@ -13,7 +13,7 @@ export const BalanceHero: React.FC<BalanceHeroProps> = ({
 }) => (
   <TiltSurface
     maxTilt={3.5}
-    className="hero-vault group min-h-[286px] rounded-[2.15rem] border border-white/15 p-5 text-white sm:p-7"
+    className="hero-vault group min-h-[286px] rounded-[2.15rem] border border-white/15 p-4 text-white sm:p-7"
   >
     <div className="finance-card-grid" />
     <Link href="/budget" className="balance-fold-action">
@@ -58,7 +58,7 @@ export const BalanceHero: React.FC<BalanceHeroProps> = ({
         </div>
       </div>
 
-      <div className="contactless-rail shrink-0 self-center transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03]">
+      <div className="contactless-rail h-[5.5rem] min-h-0 w-10 shrink-0 self-center transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03] sm:h-auto sm:min-h-[7.5rem] sm:w-[3.2rem]">
         <Wifi className="h-6 w-6 rotate-90" />
       </div>
     </div>

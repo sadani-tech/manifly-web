@@ -1,4 +1,4 @@
-import type { Transaction, Category } from "@/lib/types";
+import type { Transaction, Category, CurrencyCode } from "@/lib/types";
 import {
   cacheTransactions,
   getCachedTransactions,
@@ -932,6 +932,23 @@ export const financialHealthApi = {
     }),
 };
 
+// ── Exchange rates ────────────────────────────────────────────────────────────
+
+export interface ApiRateTable {
+  base: string;
+  /** Unit mata uang tujuan per 1 unit `base`. Memuat `base` sendiri = 1. */
+  rates: Partial<Record<CurrencyCode, number>>;
+  observedAt: string | null;
+  source: string | null;
+  /** Kurs lebih tua dari 24 jam atau belum pernah berhasil di-refresh. */
+  stale: boolean;
+}
+
+export const exchangeRatesApi = {
+  get: (base: CurrencyCode = "IDR") =>
+    request<ApiRateTable>(`/exchange-rates?base=${base}`),
+};
+
 // ── Debts ─────────────────────────────────────────────────────────────────────
 
 export interface ApiDebt {
@@ -1182,7 +1199,15 @@ export interface ApiNetWorth {
   breakdown: Record<string, number>;
   items: ApiNetWorthItem[];
   history: Array<{ date: string; netWorth: number }>;
+  /** Mata uang yang dikonversi ke `currency`; membuat total jadi perkiraan. */
+  convertedCurrencies: string[];
+  /** Mata uang yang dilewati karena belum ada kurs tersimpan. */
   excludedCurrencies: string[];
+  approximate: boolean;
+  rateSnapshot: Record<
+    string,
+    { rate: number; observedAt: string | null; source: string | null }
+  >;
   provenance: string;
 }
 
