@@ -40,6 +40,7 @@ const PROTECTED_EXACT_ROUTES = [
   "/accounts",
   "/accounts/invitations",
   "/settings/backup",
+  "/settings/membership",
   "/settings/notifications",
   "/settings/profile",
   "/settings/shared-wallet",
