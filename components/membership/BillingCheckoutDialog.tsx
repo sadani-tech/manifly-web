@@ -61,7 +61,15 @@ export function BillingCheckoutDialog({
         policyVersion: publicConfig.policyVersion,
         idempotencyKey: idempotencyKey.current,
       });
-      if (!result.checkoutUrl) throw new Error('Hosted checkout belum tersedia.');
+      if (!result.checkoutUrl) {
+        if (!result.vaNumber && !result.qrString) {
+          throw new Error('Instruksi pembayaran belum tersedia.');
+        }
+        window.location.assign(
+          `/checkout/success?reference=${encodeURIComponent(result.referenceId)}`,
+        );
+        return;
+      }
       const url = new URL(result.checkoutUrl);
       const configuredHosts = (
         process.env.NEXT_PUBLIC_CHECKOUT_ALLOWED_HOSTS || ''
@@ -104,7 +112,7 @@ export function BillingCheckoutDialog({
         <div className="mt-4 space-y-2 text-xs leading-5 text-muted-foreground"><p>Pembayaran pertama dilakukan saat checkout dan diperpanjang otomatis setiap bulan.</p><p>{summary?.replacementDisclosure}</p><p>{summary?.providerCostNotice}</p></div>
         <div className="mt-5 space-y-3">{consentLabels.map((label, index) => <label key={index} className="flex cursor-pointer items-start gap-3 text-sm"><input type="checkbox" checked={consents[index]} onChange={(event) => setConsents((current) => current.map((value, item) => item === index ? event.target.checked : value))} className="mt-1 h-4 w-4" />{label}</label>)}</div>
         {error && <p role="alert" className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
-        <button type="button" onClick={() => void checkout()} disabled={!summary || !consents.every(Boolean) || loading} className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-black text-primary-foreground disabled:opacity-40">{loading && <Loader2 className="h-4 w-4 animate-spin" />}{loading ? 'Membuka checkout…' : 'Lanjut ke pembayaran aman'}</button>
+        <button type="button" onClick={() => void checkout()} disabled={!summary || !consents.every(Boolean) || loading} className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-black text-primary-foreground disabled:opacity-40">{loading && <Loader2 className="h-4 w-4 animate-spin" />}{loading ? 'Menyiapkan pembayaran…' : 'Lanjut ke pembayaran aman'}</button>
       </div>
     </div>
   );

@@ -565,6 +565,9 @@ export interface BillingCheckout {
     | "cancelled"
     | "retryable";
   checkoutUrl: string | null;
+  vaNumber: string | null;
+  qrString: string | null;
+  paymentMethod: string | null;
   expiresAt: string | null;
   amount: number;
   currency: string;
