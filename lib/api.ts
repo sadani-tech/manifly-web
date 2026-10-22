@@ -43,7 +43,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+    // API responses are user/session-specific. Avoid browser revalidation
+    // returning an empty 304 response that the JSON parser cannot consume.
+    cache: options.cache ?? "no-store",
+  });
 
   if (!res.ok) {
     // Only a rejected *authenticated* request signals a stale session. A 401
