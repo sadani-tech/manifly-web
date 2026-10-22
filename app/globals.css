@@ -244,6 +244,16 @@ body {
   }
 }
 
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-135%);
+  }
+  50%,
+  100% {
+    transform: translateX(340%);
+  }
+}
+
 .mf-card {
   position: relative;
   box-shadow:

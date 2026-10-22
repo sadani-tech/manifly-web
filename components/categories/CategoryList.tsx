@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { LockKeyhole, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CategoryBadge } from "@/components/categories/CategoryBadge";
@@ -11,6 +12,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useCategories } from "@/hooks/useCategories";
 import { useTransactions } from "@/hooks/useTransactions";
 import type { Category } from "@/lib/types";
+import { membershipApi, type EffectiveEntitlement } from "@/lib/api";
 
 const TYPE_LABELS = {
   income: "Pemasukan",
@@ -26,6 +28,19 @@ export const CategoryList: React.FC = () => {
   const [editing, setEditing] = useState<Category | null>(null);
   const [adding, setAdding] = useState(false);
   const [confirming, setConfirming] = useState<Category | null>(null);
+  const [customLimit, setCustomLimit] =
+    useState<EffectiveEntitlement | null>(null);
+
+  useEffect(() => {
+    void membershipApi
+      .entitlements()
+      .then((snapshot) =>
+        setCustomLimit(snapshot.entitlements["categories.custom_active"] ?? null),
+      )
+      .catch(() => undefined);
+  }, []);
+
+  const creationLocked = customLimit?.upgradeRequired ?? false;
 
   const usageById = useMemo(() => {
     const usage = new Map<string, number>();
@@ -53,10 +68,25 @@ export const CategoryList: React.FC = () => {
         <Button
           className="self-start sm:self-auto"
           onClick={() => setAdding(true)}
+          disabled={creationLocked}
         >
           <Plus className="h-4 w-4" /> Kategori baru
         </Button>
       </div>
+
+      {creationLocked ? (
+        <div className="mb-5 rounded-xl border border-amber-500/35 bg-amber-500/10 p-3 text-sm">
+          Batas kategori custom tercapai ({customLimit?.usage}/
+          {customLimit?.limit}). Kategori lama tetap dapat dibaca atau
+          diarsipkan. {" "}
+          <Link
+            href="/settings/membership"
+            className="font-semibold underline underline-offset-4"
+          >
+            Lihat Membership
+          </Link>
+        </div>
+      ) : null}
 
       <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {categories.map((category) => {
@@ -91,6 +121,7 @@ export const CategoryList: React.FC = () => {
                         size="icon"
                         className="border border-border/70 bg-background/55 text-muted-foreground hover:border-brand-lime/70 hover:text-foreground"
                         aria-label={`Edit ${category.name}`}
+                        disabled={category.readOnly}
                         onClick={() => setEditing(category)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -122,7 +153,11 @@ export const CategoryList: React.FC = () => {
                       <p className="text-xs font-semibold text-muted-foreground">
                         {TYPE_LABELS[category.type]}
                       </p>
-                      {category.isDefault ? (
+                      {category.readOnly ? (
+                        <p className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-amber-600">
+                          <LockKeyhole className="h-3 w-3" /> Hanya baca
+                        </p>
+                      ) : category.isDefault ? (
                         <p className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-kicker">
                           <ShieldCheck className="h-3 w-3" /> Bawaan
                         </p>

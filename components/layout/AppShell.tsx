@@ -12,7 +12,10 @@ import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { NotificationScheduler } from "@/components/layout/NotificationScheduler";
 import { DataBootstrap } from "@/components/layout/DataBootstrap";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { NotFoundView } from "@/components/shared/NotFoundView";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { authApi } from "@/lib/api";
+import { NAV_ITEMS } from "@/lib/constants";
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useCategoryStore } from "@/store/categoryStore";
@@ -29,8 +32,19 @@ const PUBLIC_EXACT_ROUTES = [
   "/pricing",
   "/contact",
   "/data-deletion",
+  "/offline",
 ];
 const PUBLIC_ROUTE_PREFIXES = ["/legal/", "/checkout/"];
+const PROTECTED_EXACT_ROUTES = [
+  ...NAV_ITEMS.map((item) => item.href),
+  "/accounts",
+  "/accounts/invitations",
+  "/settings/backup",
+  "/settings/notifications",
+  "/settings/profile",
+  "/settings/shared-wallet",
+  "/settings/whatsapp",
+];
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -46,6 +60,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const isPublicRoute =
     PUBLIC_EXACT_ROUTES.includes(pathname) ||
     PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const isUnknownRoute =
+    !isPublicRoute && !PROTECTED_EXACT_ROUTES.includes(pathname);
 
   // The token lives in a zustand `persist` store backed by localStorage. On a
   // cold start (especially the installed PWA) that store rehydrates *after* the
@@ -73,7 +89,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const bootstrappedToken = useRef<string | null>(null);
 
   useEffect(() => {
-    if (isPublicRoute || !hydrated) return;
+    if (isPublicRoute || isUnknownRoute || !hydrated) return;
 
     if (!token) {
       router.replace("/login");
@@ -95,6 +111,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     hydrated,
     pathname,
     isPublicRoute,
+    isUnknownRoute,
     fetchCategories,
     fetchAccounts,
     fetchTransactions,
@@ -109,8 +126,20 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   // Until hydration settles (and a token is confirmed present) render an empty
   // themed shell — never the login page — so we don't flash login for a user
   // who is actually signed in.
+  if (isUnknownRoute) {
+    return (
+      <ThemeProvider>
+        <NotFoundView />
+      </ThemeProvider>
+    );
+  }
+
   if (!authed) {
-    return <ThemeProvider>{null}</ThemeProvider>;
+    return (
+      <ThemeProvider>
+        <PageLoading fullScreen label="Menyiapkan ruang Manifly..." />
+      </ThemeProvider>
+    );
   }
 
   return (

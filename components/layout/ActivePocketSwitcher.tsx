@@ -18,9 +18,9 @@ export function ActivePocketSwitcher() {
       <Select
         aria-label={`Pocket aktif${active ? `: ${active.name}` : ""}`}
         title={active ? `Pocket aktif: ${active.name}` : "Pilih pocket aktif"}
-        className="w-11 sm:w-44 lg:w-52"
+        className="w-11 max-w-[calc(100vw-9.5rem)] sm:w-44 lg:w-52"
         buttonClassName="h-10 w-full justify-center border-brand-navy/15 bg-card px-0 sm:justify-start sm:px-2.5 [&>svg]:ml-0 sm:[&>svg]:ml-2"
-        menuMinWidth={260}
+        menuMinWidth={220}
         triggerContent={
           <span className="flex min-w-0 items-center gap-2">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-lime/45 text-brand-navy dark:bg-brand-lime/15 dark:text-brand-lime">
@@ -63,7 +63,9 @@ export function ActivePocketSwitcher() {
                   {account.currency}
                   {account.ownership === "shared"
                     ? ` · Shared · ${account.role}`
-                    : " · Milikmu"}
+                    : account.readOnly
+                      ? " · Read-only"
+                      : " · Milikmu"}
                 </span>
               </span>
             </span>

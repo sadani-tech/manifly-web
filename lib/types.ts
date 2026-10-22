@@ -7,11 +7,14 @@ export type CategoryScope = TransactionType | "both";
 
 export interface Category {
   id: string;
+  code?: string | null;
   name: string;
   color: string; // Hex color used by charts and badges
   icon?: string; // Lucide icon name (optional)
   type: CategoryScope;
   isDefault: boolean;
+  archivedAt?: string | null;
+  readOnly?: boolean;
 }
 
 export interface Transaction {
@@ -70,7 +73,8 @@ export interface CategoryAggregate {
 
 export type Theme = "light" | "dark" | "system";
 
-export type CurrencyCode = "IDR" | "USD" | "EUR" | "SGD" | "MYR" | "JPY" | "GBP";
+export type CurrencyCode =
+  "IDR" | "USD" | "EUR" | "SGD" | "MYR" | "JPY" | "GBP";
 
 export interface CurrencyConfig {
   code: CurrencyCode;

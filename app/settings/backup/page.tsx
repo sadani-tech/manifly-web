@@ -66,18 +66,25 @@ export default function BackupPage() {
         const text = event.target?.result as string;
         const parsed = JSON.parse(text) as BackupData;
         if (
-          ![2, 3, 4].includes(Number(parsed.version)) ||
+          ![2, 3, 4, 5].includes(Number(parsed.version)) ||
           !Array.isArray(parsed.transactions) ||
           !Array.isArray(parsed.categories) ||
           !Array.isArray(parsed.budgets) ||
           !Array.isArray(parsed.recurrings) ||
           !Array.isArray(parsed.debts) ||
           !Array.isArray(parsed.sharedWalletMembers) ||
-          (Number(parsed.version) === 4 &&
+          (Number(parsed.version) >= 4 &&
             (!Array.isArray(parsed.accounts) ||
               !Array.isArray(parsed.accountShares) ||
               !Array.isArray(parsed.transfers) ||
               !Array.isArray(parsed.smartRules))) ||
+          (Number(parsed.version) === 5 &&
+            (!Array.isArray(parsed.goals) ||
+              !Array.isArray(parsed.goalContributions) ||
+              !Array.isArray(parsed.forecastScenarios) ||
+              !Array.isArray(parsed.subscriptions) ||
+              !Array.isArray(parsed.netWorthItems) ||
+              !Array.isArray(parsed.netWorthSnapshots))) ||
           !parsed.preferences
         ) {
           setErrorMessage("Invalid backup file format.");
@@ -144,7 +151,8 @@ export default function BackupPage() {
           <CardTitle>Export</CardTitle>
           <CardDescription>
             Download transactions, categories, budgets, recurring schedules,
-            debts, shared-wallet settings, and notification preferences.
+            debts, planning data, net worth snapshots, avatar, shared-wallet
+            settings, and notification preferences.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -204,10 +212,17 @@ export default function BackupPage() {
                 <li>{parsedBackup.debts.length} debt record</li>
                 <li>
                   {parsedBackup.sharedWalletMembers.length} shared-wallet member
-                  {parsedBackup.version === 4 && (
+                  {parsedBackup.version >= 4 && (
                     <> · {parsedBackup.accounts?.length ?? 0} accounts · {parsedBackup.transfers?.length ?? 0} transfers · {parsedBackup.smartRules?.length ?? 0} rules</>
                   )}
                 </li>
+                {parsedBackup.version === 5 ? (
+                  <li>
+                    {parsedBackup.goals?.length ?? 0} goals · {" "}
+                    {parsedBackup.subscriptions?.length ?? 0} subscriptions · {" "}
+                    {parsedBackup.netWorthItems?.length ?? 0} net worth items
+                  </li>
+                ) : null}
                 <li>
                   {parsedBackup.whatsappNumbers?.length ?? 0} WhatsApp number
                   metadata

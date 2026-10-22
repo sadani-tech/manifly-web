@@ -7,18 +7,26 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-/** Format a number as a currency string. Defaults to IDR if no config supplied. */
+/**
+ * Format a number as a currency string. Defaults to IDR if no config supplied.
+ *
+ * `approx` prefixes "≈ " to mark a value that was converted from another
+ * currency at a stored rate rather than recorded in this currency (PRD v1.2
+ * Sec. 3.8 acceptance criteria). Never set it for a native-currency amount —
+ * the marker is what tells the reader a number is an estimate.
+ */
 export function formatCurrency(
   value: number,
-  opts?: { compact?: boolean; currency?: CurrencyConfig },
+  opts?: { compact?: boolean; currency?: CurrencyConfig; approx?: boolean },
 ): string {
   const currency = opts?.currency ?? CURRENCIES.IDR;
-  return new Intl.NumberFormat(currency.locale, {
+  const formatted = new Intl.NumberFormat(currency.locale, {
     style: "currency",
     currency: currency.code,
     notation: opts?.compact ? "compact" : "standard",
     maximumFractionDigits: opts?.compact ? 1 : currency.decimals,
   }).format(value);
+  return opts?.approx ? `≈ ${formatted}` : formatted;
 }
 
 /**
@@ -86,9 +94,12 @@ export function formatSignedAmount(
   amount: number,
   type: "income" | "expense",
   currency?: CurrencyConfig,
+  approx?: boolean,
 ): string {
   const sign = type === "income" ? "+" : "-";
-  return `${sign}${formatCurrency(amount, { currency })}`;
+  // The "≈" belongs in front of the sign, so the reader sees "≈ -Rp10.000"
+  // rather than a sign applied to an approximation marker.
+  return `${approx ? "≈ " : ""}${sign}${formatCurrency(amount, { currency })}`;
 }
 
 /** Format an ISO date as a short, locale-aware date string. */

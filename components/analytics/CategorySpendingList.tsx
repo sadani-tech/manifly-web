@@ -2,6 +2,7 @@
 
 import type { CategoryAggregate } from "@/lib/types";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useLedgerCurrency } from "@/hooks/useLedgerCurrency";
 import { EmptyState } from "@/components/shared/EmptyState";
 
 interface CategorySpendingListProps {
@@ -13,7 +14,12 @@ export const CategorySpendingList: React.FC<CategorySpendingListProps> = ({
   data,
   emptyLabel = "Belum ada data untuk periode ini.",
 }) => {
-  const { fmt } = useCurrency();
+  const { fmt: formatMoney } = useCurrency();
+  const ledgerCurrency = useLedgerCurrency();
+  // Chart selalu di-render dalam konteks pocket aktif, jadi nominalnya
+  // bersumber dari currency ledger pocket itu.
+  const fmt = (value: number, opts?: { compact?: boolean }) =>
+    formatMoney(value, { ...opts, from: ledgerCurrency });
 
   if (data.length === 0) {
     return <EmptyState title="Tidak ada data" description={emptyLabel} />;

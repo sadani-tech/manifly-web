@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Plus, ScanLine } from "lucide-react";
 import { useAccountStore } from "@/store/accountStore";
+import { usePathname, useRouter } from "next/navigation";
 
 /**
  * Mobile-only shortcuts for scanning and adding a transaction. Hidden when
@@ -10,11 +11,13 @@ import { useAccountStore } from "@/store/accountStore";
  * respect the device safe area.
  */
 export const FloatingScanButton: React.FC = () => {
+  const pathname = usePathname();
+  const router = useRouter();
   const accounts = useAccountStore((state) => state.accounts);
   const activeAccountId = useAccountStore((state) => state.activeAccountId);
   const active = accounts.find((account) => account.id === activeAccountId);
 
-  if (!active || active.role === "viewer") {
+  if (!active || active.role === "viewer" || active.readOnly) {
     return null;
   }
 
@@ -28,14 +31,22 @@ export const FloatingScanButton: React.FC = () => {
       >
         <ScanLine className="h-5 w-5 transition-transform group-hover:scale-110" />
       </Link>
-      <Link
-        href="/transactions?add=1"
+      <button
+        type="button"
+        onClick={() => {
+          if (pathname === "/transactions") {
+            window.history.replaceState(null, "", "/transactions");
+            window.dispatchEvent(new CustomEvent("manifly:add-transaction"));
+          } else {
+            router.push("/transactions?add=1");
+          }
+        }}
         aria-label="Tambah transaksi"
         title="Tambah transaksi"
         className="neo-sticker focus-ring group flex h-14 w-14 items-center justify-center rounded-full bg-brand-lime text-brand-navy shadow-[5px_6px_0_color-mix(in_srgb,var(--brand-navy)_25%,transparent),0_18px_34px_color-mix(in_srgb,var(--brand-navy)_20%,transparent)] transition-[transform,box-shadow] hover:-translate-y-1 hover:-rotate-3 active:translate-y-1 active:scale-95"
       >
         <Plus className="h-6 w-6 transition-transform group-hover:scale-110" />
-      </Link>
+      </button>
     </div>
   );
 };

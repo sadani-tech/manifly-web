@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { CategoryAggregate } from "@/lib/types";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useLedgerCurrency } from "@/hooks/useLedgerCurrency";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PieChart as PieChartIcon } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -24,7 +25,12 @@ const PLAYFUL_PALETTE = [
 export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const { fmt } = useCurrency();
+  const { fmt: formatMoney } = useCurrency();
+  const ledgerCurrency = useLedgerCurrency();
+  // Chart selalu di-render dalam konteks pocket aktif, jadi nominalnya
+  // bersumber dari currency ledger pocket itu.
+  const fmt = (value: number, opts?: { compact?: boolean }) =>
+    formatMoney(value, { ...opts, from: ledgerCurrency });
   const reducedMotion = useReducedMotion();
 
   if (data.length === 0) {

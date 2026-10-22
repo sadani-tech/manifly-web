@@ -72,7 +72,7 @@ export const RecentTransactions: React.FC = () => {
                   : "text-sm font-semibold tabular-nums text-expense"
               }
             >
-              {fmtSigned(tx.amount, tx.type)}
+              {fmtSigned(tx.amount, tx.type, tx.currency ?? undefined)}
             </div>
           </li>
         );

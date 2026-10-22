@@ -105,7 +105,10 @@ export function Select({
     if (!open) return;
     updatePosition();
 
-    const close = (event: PointerEvent) => {
+    // Do not unmount the portalled listbox during `pointerdown`. On touch and
+    // pen input Chromium may still be finishing the pointer sequence and can
+    // report a spurious releasePointerCapture NotFoundError.
+    const close = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
         !buttonRef.current?.contains(target) &&
@@ -118,11 +121,11 @@ export function Select({
 
     window.addEventListener("resize", reposition);
     window.addEventListener("scroll", reposition, true);
-    document.addEventListener("pointerdown", close);
+    document.addEventListener("click", close);
     return () => {
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, true);
-      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("click", close);
     };
   }, [open, updatePosition]);
 

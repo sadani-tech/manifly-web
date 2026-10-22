@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import type { MonthlyAggregate } from "@/lib/types";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useLedgerCurrency } from "@/hooks/useLedgerCurrency";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AccessibleChartSummary } from "@/components/charts/AccessibleChartSummary";
 
@@ -23,7 +24,12 @@ interface BalanceChartProps {
 export const BalanceChart: React.FC<BalanceChartProps> = ({ data }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const { fmt } = useCurrency();
+  const { fmt: formatMoney } = useCurrency();
+  const ledgerCurrency = useLedgerCurrency();
+  // Chart selalu di-render dalam konteks pocket aktif, jadi nominalnya
+  // bersumber dari currency ledger pocket itu.
+  const fmt = (value: number, opts?: { compact?: boolean }) =>
+    formatMoney(value, { ...opts, from: ledgerCurrency });
   const reducedMotion = useReducedMotion();
 
   if (!mounted) return <div className="h-[300px] w-full" />;

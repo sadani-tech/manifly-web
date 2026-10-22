@@ -104,7 +104,10 @@ export function DatePicker({
     if (!open) return;
     updatePosition();
 
-    const close = (event: PointerEvent) => {
+    // Close after the pointer sequence has completed. Removing a portalled
+    // calendar during `pointerdown` can make Chromium try to release pointer
+    // capture from a node that no longer owns it.
+    const close = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
         !buttonRef.current?.contains(target) &&
@@ -121,12 +124,12 @@ export function DatePicker({
       }
     };
 
-    document.addEventListener("pointerdown", close);
+    document.addEventListener("click", close);
     window.addEventListener("keydown", escape);
     window.addEventListener("resize", reposition);
     window.addEventListener("scroll", reposition, true);
     return () => {
-      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("click", close);
       window.removeEventListener("keydown", escape);
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, true);
@@ -268,7 +271,6 @@ export function DatePicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={dialogId}
-        aria-required={required || undefined}
         onClick={openCalendar}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown" && !open) {

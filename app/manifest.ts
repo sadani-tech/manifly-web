@@ -43,9 +43,14 @@ export default function manifest(): ManifestWithShareTarget {
     name: "Manifly",
     short_name: "Manifly",
     description: "Pelacak keuangan pribadi",
+    // A stable id prevents the browser from treating a changed start URL as
+    // a second installed app after a future PWA launch-route update.
+    id: "/",
     start_url: "/dashboard",
     scope: "/",
+    display_override: ["window-controls-overlay", "standalone"],
     display: "standalone",
+    prefer_related_applications: false,
     orientation: "portrait-primary",
     background_color: "#f6f6f0",
     theme_color: "#C9F45A",

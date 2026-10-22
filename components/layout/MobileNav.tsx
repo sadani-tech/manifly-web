@@ -20,6 +20,8 @@ import {
   WandSparkles,
   UserCircle,
   X,
+  Target,
+  Landmark,
   type LucideIcon,
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
@@ -40,6 +42,8 @@ const ICONS: Record<string, LucideIcon> = {
   Settings,
   WalletCards,
   WandSparkles,
+  Target,
+  Landmark,
 };
 
 // A bottom bar fits ~5 slots comfortably on a phone. Show the four most-used
@@ -115,7 +119,7 @@ export const MobileNav: React.FC = () => {
       {/* Bottom tab bar */}
       <nav
         aria-label="Primary"
-        className="glass-surface fixed inset-x-2 bottom-2 z-30 rounded-[1.35rem] border border-brand-navy/15 shadow-[0_18px_45px_rgba(15,23,42,.16)] md:hidden"
+        className="glass-surface fixed inset-x-2 bottom-[calc(0.5rem+env(safe-area-inset-bottom))] z-30 rounded-[1.35rem] border border-brand-navy/15 shadow-[0_18px_45px_rgba(15,23,42,.16)] md:hidden"
       >
         <ul className="grid grid-cols-5">
           {primary.map((item) => {

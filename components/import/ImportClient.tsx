@@ -44,7 +44,8 @@ interface ConfirmFormState {
   accountId: string;
 }
 
-const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf";
+const ACCEPTED_TYPES =
+  "image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf";
 
 export const ImportClient: React.FC = () => {
   const router = useRouter();
@@ -67,9 +68,12 @@ export const ImportClient: React.FC = () => {
   const [showRawText, setShowRawText] = React.useState<boolean>(false);
   const accountRows = useAccountStore((state) => state.accounts);
   const activeAccountId = useAccountStore((state) => state.activeAccountId);
-  const activeAccount = accountRows.find((account) => account.id === activeAccountId);
+  const activeAccount = accountRows.find(
+    (account) => account.id === activeAccountId,
+  );
   const accounts = React.useMemo(
-    () => activeAccount && activeAccount.role !== "viewer" ? [activeAccount] : [],
+    () =>
+      activeAccount && activeAccount.role !== "viewer" ? [activeAccount] : [],
     [activeAccount],
   );
 
@@ -80,14 +84,27 @@ export const ImportClient: React.FC = () => {
 
   // Prefer expense-capable categories — most receipts are expenses.
   const expenseCategories = React.useMemo(
-    () => categories.filter((c) => c.type === "expense" || c.type === "both"),
+    () =>
+      categories.filter(
+        (c) =>
+          !c.archivedAt &&
+          !c.readOnly &&
+          (c.type === "expense" || c.type === "both"),
+      ),
     [categories],
   );
   const incomeCategories = React.useMemo(
-    () => categories.filter((c) => c.type === "income" || c.type === "both"),
+    () =>
+      categories.filter(
+        (c) =>
+          !c.archivedAt &&
+          !c.readOnly &&
+          (c.type === "income" || c.type === "both"),
+      ),
     [categories],
   );
-  const visibleCategories = form?.type === "income" ? incomeCategories : expenseCategories;
+  const visibleCategories =
+    form?.type === "income" ? incomeCategories : expenseCategories;
 
   // ------------------------------------------------------------------
   // OCR pipeline
@@ -97,7 +114,11 @@ export const ImportClient: React.FC = () => {
     async (dataUrl: string, mime: string) => {
       setStage("processing");
       setProgress(0);
-      setStatusLabel(mime === "application/pdf" ? "Merender halaman pertama PDF..." : "Menyiapkan gambar...");
+      setStatusLabel(
+        mime === "application/pdf"
+          ? "Merender halaman pertama PDF..."
+          : "Menyiapkan gambar...",
+      );
       setErrorMessage("");
 
       // Cancel any in-flight job before starting a new one.
@@ -123,19 +144,23 @@ export const ImportClient: React.FC = () => {
         const result = parseReceipt(ocrText);
         setParsed(result);
 
-      // Pick a sensible default category for expenses.
-      const defaultCategory =
-        expenseCategories.find((c) => c.id === "cat-food") ??
-        expenseCategories.find((c) => c.id === "cat-other") ??
-        expenseCategories[0];
+        // Pick a sensible default category for expenses.
+        const defaultCategory =
+          expenseCategories.find((c) => c.id === "cat-food") ??
+          expenseCategories.find((c) => c.id === "cat-other") ??
+          expenseCategories[0];
 
         setForm({
-        amount: result.amount !== null ? String(Math.round(result.amount * 100) / 100) : "",
-        type: "expense",
-        categoryId: defaultCategory?.id ?? "",
-        date: result.date || todayISO(),
-        notes: result.merchant || "",
-        accountId: activeAccount?.role !== "viewer" ? activeAccount?.id ?? "" : "",
+          amount:
+            result.amount !== null
+              ? String(Math.round(result.amount * 100) / 100)
+              : "",
+          type: "expense",
+          categoryId: defaultCategory?.id ?? "",
+          date: result.date || todayISO(),
+          notes: result.merchant || "",
+          accountId:
+            activeAccount?.role !== "viewer" ? (activeAccount?.id ?? "") : "",
         });
         setStage("confirm");
         setProgress(100);
@@ -143,7 +168,11 @@ export const ImportClient: React.FC = () => {
       } catch (error) {
         if (controller.signal.aborted) return;
         setStage("upload");
-        setErrorMessage(error instanceof Error ? error.message : "OCR gagal memproses berkas.");
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "OCR gagal memproses berkas.",
+        );
       }
     },
     [expenseCategories, activeAccount],
@@ -219,7 +248,8 @@ export const ImportClient: React.FC = () => {
 
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+        reader.onload = () =>
+          resolve(typeof reader.result === "string" ? reader.result : "");
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(file);
       }).catch(() => "");
@@ -316,7 +346,11 @@ export const ImportClient: React.FC = () => {
       return;
     }
     if (!form.accountId) {
-      setErrorMessage(activeAccount?.role === "viewer" ? "Pocket aktif hanya dapat dilihat." : "Pilih Pocket aktif dari navigasi.");
+      setErrorMessage(
+        activeAccount?.role === "viewer"
+          ? "Pocket aktif hanya dapat dilihat."
+          : "Pilih Pocket aktif dari navigasi.",
+      );
       return;
     }
     setErrorMessage("");
@@ -461,7 +495,10 @@ const UploadStage: React.FC<UploadStageProps> = ({
           <Button onClick={() => cameraInputRef.current?.click()}>
             <Camera className="h-4 w-4" /> Ambil foto
           </Button>
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <ImagePlus className="h-4 w-4" /> Pilih dari galeri
           </Button>
         </div>
@@ -491,9 +528,12 @@ const UploadStage: React.FC<UploadStageProps> = ({
       <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
         <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
         <div>
-          <strong className="text-foreground">Diproses di perangkat Anda.</strong>{" "}
-          Format yang didukung: JPEG, PNG, WebP, HEIC/HEIF, dan PDF (halaman pertama) dari GoPay, OVO, DANA,
-          BCA Mobile, Mandiri, Alfamart, Indomaret, dan struk umum lainnya.
+          <strong className="text-foreground">
+            Diproses di perangkat Anda.
+          </strong>{" "}
+          Format yang didukung: JPEG, PNG, WebP, HEIC/HEIF, dan PDF (halaman
+          pertama) dari GoPay, OVO, DANA, BCA Mobile, Mandiri, Alfamart,
+          Indomaret, dan struk umum lainnya.
         </div>
       </div>
     </CardContent>
@@ -540,8 +580,8 @@ const ProcessingStage: React.FC<ProcessingStageProps> = ({
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Membaca dan menganalisis struk Anda. Ini bisa memakan waktu beberapa detik
-            saat pertama kali dijalankan.
+            Membaca dan menganalisis struk Anda. Ini bisa memakan waktu beberapa
+            detik saat pertama kali dijalankan.
           </p>
           <div>
             <Button variant="outline" size="sm" onClick={onCancel}>
@@ -744,7 +784,9 @@ const ConfirmStage: React.FC<ConfirmStageProps> = ({
                   label: `${account.name}${account.ownership === "shared" ? " · Shared" : ""}`,
                 }))}
               />
-              <p className="text-xs text-muted-foreground">Hasil pindai akan masuk ke Pocket aktif.</p>
+              <p className="text-xs text-muted-foreground">
+                Hasil pindai akan masuk ke Pocket aktif.
+              </p>
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
@@ -766,7 +808,9 @@ const ConfirmStage: React.FC<ConfirmStageProps> = ({
                 onClick={() => setShowRawText(!showRawText)}
                 className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
               >
-                <span>{showRawText ? "Sembunyikan" : "Lihat"} teks OCR mentah</span>
+                <span>
+                  {showRawText ? "Sembunyikan" : "Lihat"} teks OCR mentah
+                </span>
                 <span className="opacity-60">{showRawText ? "−" : "+"}</span>
               </button>
               {showRawText ? (

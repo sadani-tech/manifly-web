@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/hooks/useCurrency";
 import { NumericTransition } from "@/components/motion/NumericTransition";
+import type { CurrencyCode } from "@/lib/types";
 
 type Tone = "neutral" | "income" | "expense";
 
@@ -14,6 +15,8 @@ interface SummaryCardProps {
   tone?: Tone;
   icon?: React.ReactNode;
   hint?: string;
+  /** Currency `amount` is denominated in; converted for display if different. */
+  from?: CurrencyCode;
 }
 
 const toneAccent: Record<Tone, string> = {
@@ -36,8 +39,13 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   tone = "neutral",
   icon,
   hint,
+  from,
 }) => {
   const { fmt } = useCurrency();
+  const format = React.useCallback(
+    (value: number) => fmt(value, { from }),
+    [fmt, from],
+  );
   return (
     <Card
       className={cn(
@@ -63,7 +71,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
                 tone === "expense" ? "text-white" : "text-brand-navy",
               )}
             >
-              <NumericTransition value={amount} format={fmt} />
+              <NumericTransition value={amount} format={format} />
             </p>
             {hint ? (
               <p
