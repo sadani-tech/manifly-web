@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Bell,
   CheckCircle2,
+  Copy,
   ExternalLink,
   Link,
   MessageSquare,
@@ -20,6 +21,7 @@ import {
   Unlink,
 } from "lucide-react";
 import { FlowBuddy } from "@/components/shared/FlowBuddy";
+import { whatsappV2Api } from "@/lib/api";
 
 interface WaPhoneNumber {
   id: string;
@@ -58,6 +60,7 @@ interface WaStatus {
   linkedAt: string | null;
   limit: number;
   numbers: WaPhoneNumber[];
+  businessPhone?: string | null;
 }
 
 interface NotificationPrefs {
@@ -119,6 +122,9 @@ export default function WhatsAppSettingsPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [commands, setCommands] = useState<Array<{ name: string; group: string; title: string; help: string; examples: string[] }>>([]);
+
+  useEffect(() => { whatsappV2Api.commands().then(setCommands).catch(() => setCommands([])); }, []);
 
   // The settings snapshot is loaded once when this client page mounts.
   useEffect(() => {
@@ -358,8 +364,20 @@ export default function WhatsAppSettingsPage() {
         </div>
       </div>
 
+      <nav aria-label="Bagian pengaturan WhatsApp" className="grid grid-cols-4 gap-1 rounded-2xl border bg-card p-1 text-center text-xs font-bold sm:text-sm">
+        <a href="#commands" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Perintah</a>
+        <a href="#connection" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Koneksi</a>
+        <a href="#notifications" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Notifikasi</a>
+        <a href="#quota" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Kuota</a>
+      </nav>
+
+      <section id="commands" className="scroll-mt-24 rounded-2xl border bg-card p-4 sm:p-6">
+        <h2 className="font-black">Perintah</h2><p className="mt-1 text-sm text-muted-foreground">Contoh ini berasal dari daftar perintah yang sama dengan bot.</p>
+        <div className="mt-4 max-h-[28rem] space-y-4 overflow-y-auto pr-1">{Array.from(new Set(commands.map((command) => command.group))).map((group) => <div key={group}><h3 className="sticky top-0 bg-card py-1 text-xs font-black uppercase tracking-wider text-kicker">{group}</h3><div className="mt-1 space-y-1">{commands.filter((command) => command.group === group).map((command) => <div key={command.name} className="flex items-center gap-2 rounded-xl bg-muted/50 p-3"><div className="min-w-0 flex-1"><p className="text-sm font-bold">{command.title}</p><p className="truncate text-xs text-muted-foreground">{command.examples[0]}</p></div><button type="button" aria-label={`Salin ${command.examples[0]}`} onClick={() => void navigator.clipboard.writeText(command.examples[0])} className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl hover:bg-background"><Copy className="h-4 w-4" /></button>{status?.businessPhone && <a href={`https://wa.me/${status.businessPhone}?text=${encodeURIComponent(command.examples[0])}`} target="_blank" rel="noreferrer" aria-label={`Coba ${command.examples[0]} di WhatsApp`} className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-emerald-700 hover:bg-background"><ExternalLink className="h-4 w-4" /></a>}</div>)}</div></div>)}</div>
+      </section>
+
       {quota && (
-        <div className="mf-card space-y-5 rounded-2xl border border-border bg-card p-6">
+        <div id="quota" className="mf-card scroll-mt-24 space-y-5 rounded-2xl border border-border bg-card p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
@@ -427,7 +445,7 @@ export default function WhatsAppSettingsPage() {
         </div>
       )}
 
-      <div className="mf-card rounded-2xl border border-border bg-card p-6">
+      <div id="connection" className="mf-card scroll-mt-24 rounded-2xl border border-border bg-card p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold">Nomor terhubung</h2>
@@ -579,7 +597,7 @@ export default function WhatsAppSettingsPage() {
       </div>
 
       {!loading && (
-        <div className="mf-card space-y-4 rounded-2xl border border-border bg-card p-6">
+        <div id="notifications" className="mf-card scroll-mt-24 space-y-4 rounded-2xl border border-border bg-card p-6">
           <div className="flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
             <h2 className="font-semibold">Tambah nomor</h2>
@@ -733,9 +751,9 @@ export default function WhatsAppSettingsPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="unlink-whatsapp-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/78 p-3 backdrop-blur-md sm:p-4"
         >
-          <div className="w-full max-w-md space-y-4 rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <div className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-[0_24px_80px_rgba(0,0,0,.48)] sm:p-6">
             <div>
               <h2 id="unlink-whatsapp-title" className="font-semibold">
                 Lepaskan {unlinkTarget.label}?

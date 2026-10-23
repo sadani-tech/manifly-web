@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -22,10 +22,14 @@ import {
   X,
   Target,
   Landmark,
+  ChartNoAxesCombined,
+  CircleHelp,
+  MessageCircleMore,
   type LucideIcon,
 } from "lucide-react";
-import { NAV_ITEMS } from "@/lib/constants";
+import { HELP_ITEMS, NAV_ITEMS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { v2Flags } from "@/lib/featureFlags";
 
 const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -44,18 +48,47 @@ const ICONS: Record<string, LucideIcon> = {
   WandSparkles,
   Target,
   Landmark,
+  ChartNoAxesCombined,
+  CircleHelp,
+  MessageCircleMore,
 };
 
 // A bottom bar fits ~5 slots comfortably on a phone. Show the four most-used
 // destinations plus a "More" button that reveals the rest in a sheet.
-const PRIMARY_HREFS = ["/dashboard", "/transactions", "/budget", "/analytics"];
+const PRIMARY_HREFS = ["/dashboard", "/transactions", "/budget", "/financial"];
 
 export const MobileNav: React.FC = () => {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
 
-  const primary = NAV_ITEMS.filter((i) => PRIMARY_HREFS.includes(i.href));
-  const secondary = NAV_ITEMS.filter((i) => !PRIMARY_HREFS.includes(i.href));
+  useEffect(() => {
+    if (!moreOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusable = () => Array.from(sheetRef.current?.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])') ?? []);
+    requestAnimationFrame(() => focusable()[0]?.focus());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setMoreOpen(false); moreButtonRef.current?.focus(); return; }
+      if (event.key !== "Tab") return;
+      const elements = focusable(); if (!elements.length) return;
+      const first = elements[0]; const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
+  }, [moreOpen]);
+
+  const navigation = NAV_ITEMS.filter((item) =>
+    item.href === "/financial" ? v2Flags.financialNavigation : true,
+  );
+  const primary = navigation.filter((i) => PRIMARY_HREFS.includes(i.href));
+  const supportItems = HELP_ITEMS.filter((item) =>
+    item.href === "/help" ? false : item.href === "/feedback" ? v2Flags.feedback : false,
+  );
+  const secondary = [...navigation.filter((i) => !PRIMARY_HREFS.includes(i.href)), ...supportItems];
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
@@ -75,7 +108,7 @@ export const MobileNav: React.FC = () => {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setMoreOpen(false)}
           />
-          <div className="glass-surface absolute inset-x-0 bottom-0 rounded-t-[2rem] border-t border-brand-navy/15 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
+          <div ref={sheetRef} className="glass-surface absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-[2rem] border-t border-brand-navy/15 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted-foreground/30" />
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold">Menu lainnya</h2>
@@ -87,7 +120,7 @@ export const MobileNav: React.FC = () => {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {secondary.map((item) => {
                 const Icon = ICONS[item.icon];
                 const active = isActive(item.href);
@@ -148,6 +181,7 @@ export const MobileNav: React.FC = () => {
           })}
           <li>
             <button
+              ref={moreButtonRef}
               onClick={() => setMoreOpen(true)}
               aria-label="Menu lainnya"
               title="Menu lainnya"

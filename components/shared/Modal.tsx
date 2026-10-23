@@ -67,17 +67,17 @@ export const Modal: React.FC<ModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className="fixed inset-x-0 bottom-0 top-[calc(4.75rem+env(safe-area-inset-top))] z-[60] flex items-end justify-center sm:items-center sm:p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4"
     >
       <div
-        className="absolute inset-0 bg-[#080a07]/65 backdrop-blur-[3px] dark:bg-black/72"
+        className="absolute inset-0 bg-[#080a07]/78 backdrop-blur-md dark:bg-black/82"
         onClick={onClose}
       />
       <div
         ref={panelRef}
         className={cn(
-          "page-enter relative z-10 flex max-h-full w-full flex-col overflow-hidden border border-border/90 bg-card text-card-foreground",
-          "rounded-t-[1.5rem] sm:rounded-[1.5rem]",
+          "page-enter relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden border border-border/90 bg-card text-card-foreground",
+          "rounded-[1.5rem]",
           "shadow-[0_24px_80px_rgba(0,0,0,0.38)] dark:shadow-[0_28px_90px_rgba(0,0,0,0.72),0_0_0_1px_rgba(201,244,90,0.06)]",
           sizeClasses[size],
         )}
@@ -100,7 +100,6 @@ export const Modal: React.FC<ModalProps> = ({
             <X className="h-4 w-4" />
           </button>
         </div>
-        {/* On the mobile bottom-sheet, pad past the home indicator. */}
         <div className="min-h-0 overflow-y-auto overscroll-contain px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5">
           {children}
         </div>

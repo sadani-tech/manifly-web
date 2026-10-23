@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Loader2, X } from 'lucide-react';
 import {
@@ -100,9 +101,9 @@ export function BillingCheckoutDialog({
     <span key="refund">Saya memahami <Link className="font-bold underline" href="/legal/refund" target="_blank">Cancellation and Refund Policy</Link>.</span>,
   ];
 
-  return (
-    <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="checkout-title" onKeyDown={(event) => event.key === 'Escape' && onClose()}>
-      <div className="w-full max-w-lg rounded-[1.75rem] border bg-card p-6 shadow-2xl sm:p-7">
+  const dialog = (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-black/78 p-3 backdrop-blur-md sm:p-4" role="dialog" aria-modal="true" aria-labelledby="checkout-title" onKeyDown={(event) => event.key === 'Escape' && onClose()}>
+      <div className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-[1.75rem] border border-border/90 bg-card p-4 text-card-foreground shadow-[0_24px_80px_rgba(0,0,0,.48)] sm:p-7">
         <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.15em] text-kicker">Konfirmasi membership</p><h2 id="checkout-title" className="mt-1 text-2xl font-black">{plan.name} v{plan.version}</h2></div><button type="button" onClick={onClose} aria-label="Tutup" className="rounded-full border p-2"><X className="h-4 w-4" /></button></div>
         <div className="mt-5 rounded-2xl bg-muted/60 p-4">
           <label className="flex items-center justify-between gap-4 text-sm font-semibold"><span>Nomor WhatsApp tambahan</span><select value={addonQuantity} onChange={(event) => setAddonQuantity(Number(event.target.value))} className="rounded-lg border bg-background px-3 py-2" aria-label="Jumlah add-on nomor WhatsApp">{Array.from({ length: maximumAddon + 1 }, (_, quantity) => <option key={quantity} value={quantity}>{quantity}</option>)}</select></label>
@@ -116,4 +117,6 @@ export function BillingCheckoutDialog({
       </div>
     </div>
   );
+
+  return typeof document === 'undefined' ? null : createPortal(dialog, document.body);
 }
