@@ -24,8 +24,8 @@ export function OnboardingTour() {
     setStep(null);
   };
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="fixed inset-0 z-[70] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
-      <section className="w-full max-w-md rounded-[2rem] border border-border bg-card p-6 shadow-2xl">
+    <div role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="fixed inset-0 z-[70] grid place-items-center bg-black/78 p-3 backdrop-blur-md sm:p-4">
+      <section className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[2rem] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(0,0,0,.48)] sm:p-6">
         <button autoFocus onClick={close} aria-label="Tutup onboarding" className="float-right rounded-full p-2 hover:bg-muted"><X className="h-4 w-4" /></button>
         <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-lime text-brand-navy"><Icon /></div>
         <p className="text-xs font-bold uppercase tracking-widest text-kicker">Langkah {step + 1} dari 3</p>

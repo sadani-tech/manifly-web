@@ -172,6 +172,34 @@ body {
   background: color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
+.prose-help h2 {
+  margin-top: 1.75rem;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.prose-help p {
+  margin-top: 0.65rem;
+  line-height: 1.75;
+  color: var(--muted-foreground);
+}
+
+.prose-help a {
+  color: var(--foreground);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-help code {
+  border-radius: 0.45rem;
+  background: var(--muted);
+  padding: 0.12rem 0.35rem;
+  color: var(--foreground);
+  font-size: 0.88em;
+}
+
 /* Playful Neo-Fintech -------------------------------------------------------
  * A neutral canvas keeps the saturated modular cards from becoming tiring.
  */

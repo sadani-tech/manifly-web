@@ -18,7 +18,7 @@
 
 // Bump when the manifest or app shell changes so installed PWAs do not keep a
 // stale cache-first manifest after a deployment.
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5";
 const PRECACHE = `manifly-precache-${CACHE_VERSION}`;
 const RUNTIME = `manifly-runtime-${CACHE_VERSION}`;
 
@@ -29,6 +29,25 @@ const APP_SHELL = [
   "/import",
   "/categories",
   "/analytics",
+  "/financial",
+  "/help",
+  "/help/mulai",
+  "/help/dashboard",
+  "/help/pockets",
+  "/help/transactions",
+  "/help/scan-struk",
+  "/help/categories",
+  "/help/budget",
+  "/help/recurring",
+  "/help/debts",
+  "/help/transfer",
+  "/help/financial",
+  "/help/whatsapp",
+  "/help/notifications",
+  "/help/membership",
+  "/help/data-privacy",
+  "/help/help-feedback",
+  "/help/faq",
   "/offline",
   "/manifest.webmanifest",
   "/icons/icon.svg",
