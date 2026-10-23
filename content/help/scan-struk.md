@@ -9,12 +9,13 @@ keywords: scan struk, manifly, panduan
 # Scan Struk
 
 ## Apa ini
-Impor foto struk dari web, periksa hasil bacanya, lalu simpan transaksi yang benar.
+Impor foto struk dari web atau kirim screenshot pembayaran lewat WhatsApp, periksa hasil bacanya, lalu simpan transaksi yang benar.
 
 ## Kapan dipakai
 Gunakan saat kamu ingin menyelesaikan pekerjaan ini dengan cepat dan tetap memahami dampaknya pada catatan keuanganmu.
 
 ## Cara pakai di web
+Di WhatsApp, kirim gambar dengan caption opsional dan tekan konfirmasi setelah hasilnya ditampilkan.
 Buka [halaman fitur](/import), ikuti petunjuk pada layar, lalu periksa kembali sebelum menyimpan perubahan.
 
 ## Cara pakai di WhatsApp

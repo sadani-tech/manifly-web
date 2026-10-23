@@ -9,7 +9,7 @@ keywords: whatsapp, manifly, panduan
 # WhatsApp
 
 ## Apa ini
-Hubungkan nomor untuk mencatat dan mengecek uang cukup lewat chat atau voice note.
+Hubungkan nomor untuk mencatat dan mengecek uang lewat chat, voice note, atau screenshot pembayaran.
 
 ## Kapan dipakai
 Gunakan saat kamu ingin menyelesaikan pekerjaan ini dengan cepat dan tetap memahami dampaknya pada catatan keuanganmu.
@@ -18,6 +18,7 @@ Gunakan saat kamu ingin menyelesaikan pekerjaan ini dengan cepat dan tetap memah
 Buka [halaman fitur](/settings/whatsapp), ikuti petunjuk pada layar, lalu periksa kembali sebelum menyimpan perubahan.
 
 ## Cara pakai di WhatsApp
+Kirim screenshot pembayaran dengan caption opsional seperti `dari BCA` atau `bayar makan`. Manifly akan membaca nominal, tanggal, merchant, dan status pembayaran, lalu meminta konfirmasi sebelum menyimpan transaksi.
 Contoh perintah selalu mengikuti daftar perintah aktif. Buka Settings → WhatsApp → Perintah untuk menyalin contoh yang sesuai.
 
 ## Batas plan
