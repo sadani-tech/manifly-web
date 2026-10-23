@@ -138,21 +138,34 @@ export const NAV_ITEMS = [
   { href: "/debts", label: "Debts", icon: "HandCoins" },
   { href: "/import", label: "Import", icon: "ScanLine" },
   { href: "/categories", label: "Categories", icon: "Tags" },
-  { href: "/analytics", label: "Analytics", icon: "BarChart3" },
-  { href: "/smart-rules", label: "Smart Rules", icon: "WandSparkles" },
-  { href: "/financial-health", label: "Financial Health", icon: "HeartPulse" },
-  { href: "/plan", label: "Plan", icon: "Target" },
-  { href: "/net-worth", label: "Net Worth", icon: "Landmark" },
+  { href: "/financial", label: "Financial", icon: "ChartNoAxesCombined" },
+  { href: "/help", label: "Bantuan", icon: "CircleHelp" },
   { href: "/settings", label: "Settings", icon: "Settings" },
 ] as const;
 
+export const FINANCIAL_ITEMS = [
+  { href: "/analytics", label: "Analytics", icon: "BarChart3" },
+  { href: "/financial-health", label: "Health", icon: "HeartPulse" },
+  { href: "/plan", label: "Plan", icon: "Target" },
+  { href: "/net-worth", label: "Net Worth", icon: "Landmark" },
+  { href: "/smart-rules", label: "Smart Rules", icon: "WandSparkles" },
+] as const;
+
 export const SETTINGS_ITEMS = [
+  { href: "/settings/whatsapp", label: "WhatsApp", icon: "MessageSquare" },
+  { href: "/settings/notifications", label: "Notifikasi", icon: "Bell" },
   { href: "/settings/profile", label: "Profile", icon: "UserCircle" },
   { href: "/settings/membership", label: "Membership", icon: "Crown" },
-  { href: "/settings/whatsapp", label: "WhatsApp", icon: "MessageSquare" },
   {
-    href: "/settings/accounts",
+    href: "/pockets",
     label: "Pocket",
     icon: "WalletCards",
   },
+  { href: "/settings/shared-wallet", label: "Shared Pocket", icon: "Users" },
+  { href: "/settings/backup", label: "Backup & Restore", icon: "DatabaseBackup" },
+] as const;
+
+export const HELP_ITEMS = [
+  { href: "/help", label: "Help", icon: "CircleHelp" },
+  { href: "/feedback", label: "Kritik & Saran", icon: "MessageCircleMore" },
 ] as const;

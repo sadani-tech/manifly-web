@@ -24,6 +24,9 @@ import { FlowBuddy } from "@/components/shared/FlowBuddy";
 import { financialHealthApi, type ApiFinancialHealth } from "@/lib/api";
 import { useAccountStore } from "@/store/accountStore";
 import { useTransactions } from "@/hooks/useTransactions";
+import { WhatsappConnectBanner } from "@/components/whatsapp/WhatsappConnectBanner";
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
+import { v2Flags } from "@/lib/featureFlags";
 
 export default function DashboardPage() {
   const { summary, expenseByCategory } = useAnalytics({ months: 6 });
@@ -60,6 +63,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      <WhatsappConnectBanner />
+      {v2Flags.help && <OnboardingChecklist />}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <FlowBuddy

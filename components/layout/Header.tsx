@@ -3,22 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
+import { ChevronDown, CircleHelp, LogOut, MessageCircle, MessageCircleMore, Settings, UserCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { BrandMark } from "@/components/shared/Logo";
 import { ActivePocketSwitcher } from "@/components/layout/ActivePocketSwitcher";
-import { NAV_ITEMS } from "@/lib/constants";
+import { FINANCIAL_ITEMS, NAV_ITEMS } from "@/lib/constants";
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useCategoryStore } from "@/store/categoryStore";
 import { useAccountStore } from "@/store/accountStore";
-import { apiAssetUrl } from "@/lib/api";
+import { apiAssetUrl, whatsappV2Api, type WhatsappStatus } from "@/lib/api";
+import { ContextualHelpDrawer } from "@/components/help/ContextualHelpDrawer";
+import { v2Flags } from "@/lib/featureFlags";
 
 function titleForPath(pathname: string): string {
+  if (pathname === "/pockets" || pathname.startsWith("/pockets/")) return "Pocket";
+  if (pathname === "/feedback" || pathname.startsWith("/feedback/")) return "Kritik & Saran";
   const match = NAV_ITEMS.find(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),
   );
-  return match?.label ?? "Manifly";
+  const financial = FINANCIAL_ITEMS.find((i) => pathname === i.href || pathname.startsWith(`${i.href}/`));
+  return match?.label ?? financial?.label ?? "Manifly";
 }
 
 function getInitials(name: string): string {
@@ -39,8 +44,12 @@ export const Header: React.FC = () => {
   const clearCat = useCategoryStore((s) => s.clearAll);
   const clearAccounts = useAccountStore((s) => s.clearAll);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [whatsapp, setWhatsapp] = useState<WhatsappStatus | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { whatsappV2Api.status().then(setWhatsapp).catch(() => setWhatsapp(null)); }, [pathname]);
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -79,6 +88,7 @@ export const Header: React.FC = () => {
   };
 
   return (
+    <>
     <header className="glass-surface sticky top-0 z-20 flex h-[calc(4.75rem+env(safe-area-inset-top))] items-center justify-between gap-2 border-b border-brand-navy/10 px-4 pt-[env(safe-area-inset-top)] sm:gap-4 sm:px-6 md:px-8 md:pt-0 xl:px-10">
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <BrandMark size={36} decorative className="md:hidden" />
@@ -92,6 +102,8 @@ export const Header: React.FC = () => {
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+        {v2Flags.help && <button type="button" onClick={() => setHelpOpen(true)} aria-label={`Buka panduan untuk ${title}`} title="Panduan halaman ini" className="focus-ring flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground"><CircleHelp className="h-4 w-4" /></button>}
+        {v2Flags.whatsappBanner && whatsapp && whatsapp.state !== "channel_unavailable" && <Link href="/settings/whatsapp" aria-label={whatsapp.state === "connected" ? "WhatsApp terhubung" : "WhatsApp belum terhubung"} title={whatsapp.state === "connected" ? "WhatsApp terhubung" : "Hubungkan WhatsApp"} className="focus-ring relative flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent"><MessageCircle className="h-4 w-4" /><span className={`absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-card ${whatsapp.state === "connected" ? "bg-emerald-500" : "bg-amber-500"}`} /></Link>}
         <ActivePocketSwitcher />
         <ThemeToggle />
         {user && (
@@ -150,6 +162,7 @@ export const Header: React.FC = () => {
                 >
                   <Settings className="h-4 w-4" /> Settings
                 </Link>
+                {v2Flags.feedback && <Link role="menuitem" href="/feedback" onClick={() => setProfileOpen(false)} className="focus-ring flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-muted"><MessageCircleMore className="h-4 w-4" /> Kritik & Saran</Link>}
                 <button
                   type="button"
                   role="menuitem"
@@ -164,5 +177,7 @@ export const Header: React.FC = () => {
         )}
       </div>
     </header>
+    {v2Flags.help && <ContextualHelpDrawer open={helpOpen} onClose={() => setHelpOpen(false)} pathname={pathname} title={title} />}
+    </>
   );
 };

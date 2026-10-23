@@ -15,12 +15,15 @@ import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { NotFoundView } from "@/components/shared/NotFoundView";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { authApi } from "@/lib/api";
-import { NAV_ITEMS } from "@/lib/constants";
+import { FINANCIAL_ITEMS, NAV_ITEMS } from "@/lib/constants";
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useCategoryStore } from "@/store/categoryStore";
 import { useUIStore } from "@/store/uiStore";
 import { useAccountStore } from "@/store/accountStore";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { NavigationChangeNotice } from "@/components/layout/NavigationChangeNotice";
 
 // Routes that render without the authenticated app chrome or the auth gate.
 const PUBLIC_EXACT_ROUTES = [
@@ -37,8 +40,13 @@ const PUBLIC_EXACT_ROUTES = [
 const PUBLIC_ROUTE_PREFIXES = ["/legal/", "/checkout/"];
 const PROTECTED_EXACT_ROUTES = [
   ...NAV_ITEMS.map((item) => item.href),
+  ...FINANCIAL_ITEMS.map((item) => item.href),
   "/accounts",
   "/accounts/invitations",
+  "/pockets",
+  "/settings/accounts",
+  "/help",
+  "/feedback",
   "/settings/backup",
   "/settings/membership",
   "/settings/notifications",
@@ -46,6 +54,7 @@ const PROTECTED_EXACT_ROUTES = [
   "/settings/shared-wallet",
   "/settings/whatsapp",
 ];
+const PROTECTED_ROUTE_PREFIXES = ["/help/"];
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -57,12 +66,15 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const fetchCategories = useCategoryStore((s) => s.fetchCategories);
   const fetchAccounts = useAccountStore((s) => s.fetchAccounts);
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
+  const financialRoute = FINANCIAL_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
 
   const isPublicRoute =
     PUBLIC_EXACT_ROUTES.includes(pathname) ||
     PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   const isUnknownRoute =
-    !isPublicRoute && !PROTECTED_EXACT_ROUTES.includes(pathname);
+    !isPublicRoute &&
+    !PROTECTED_EXACT_ROUTES.includes(pathname) &&
+    !PROTECTED_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   // The token lives in a zustand `persist` store backed by localStorage. On a
   // cold start (especially the installed PWA) that store rehydrates *after* the
@@ -157,6 +169,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         >
           <Header />
           <main className="mx-auto w-full max-w-[1440px] px-4 py-5 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:px-8 md:pb-12 xl:px-10">
+            {financialRoute && <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-muted-foreground"><Link href="/financial" className="focus-ring rounded-md font-bold hover:text-foreground">Financial</Link><ChevronRight className="h-3.5 w-3.5" /><span aria-current="page">{financialRoute.label}</span></nav>}
             <div key={pathname} className="page-enter">
               {children}
             </div>
@@ -168,6 +181,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         <NotificationScheduler />
         <DataBootstrap />
         <OnboardingTour />
+        <NavigationChangeNotice />
       </div>
     </ThemeProvider>
   );
