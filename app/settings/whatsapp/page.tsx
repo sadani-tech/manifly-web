@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { FlowBuddy } from "@/components/shared/FlowBuddy";
 import { whatsappV2Api } from "@/lib/api";
+import { apiBaseUrl } from "@/lib/api-origin";
 
 interface WaPhoneNumber {
   id: string;
@@ -76,7 +77,7 @@ interface LinkChallenge {
   label: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const API_BASE = apiBaseUrl();
 
 const PREF_LABELS: {
   key: keyof NotificationPrefs;

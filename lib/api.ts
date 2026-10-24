@@ -1,4 +1,5 @@
 import type { Transaction, Category, CurrencyCode } from "@/lib/types";
+import { apiBaseUrl } from "@/lib/api-origin";
 import {
   cacheTransactions,
   getCachedTransactions,
@@ -11,7 +12,7 @@ import {
 
 export type { Transaction, Category };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const API_URL = apiBaseUrl();
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;

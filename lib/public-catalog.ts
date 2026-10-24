@@ -3,6 +3,7 @@ import type {
   MembershipAddonSummary,
   MembershipPlanSummary,
 } from '@/lib/api';
+import { apiBaseUrl } from '@/lib/api-origin';
 
 const entitlements = (
   numbers: number,
@@ -69,8 +70,7 @@ export const FALLBACK_ADDONS: MembershipAddonSummary[] = [
 ];
 
 export async function getPublicCatalog() {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  const apiUrl = apiBaseUrl();
   try {
     const [plansResponse, addonsResponse] = await Promise.all([
       fetch(`${apiUrl}/membership/plans`, { next: { revalidate: 300 } }),
