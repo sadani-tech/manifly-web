@@ -64,6 +64,7 @@ interface WaStatus {
 }
 
 interface NotificationPrefs {
+  waProactiveOptIn: boolean;
   notifyMonthlyRecap: boolean;
   notifyOverBudget: boolean;
   notifyDebtDue: boolean;
@@ -115,6 +116,7 @@ export default function WhatsAppSettingsPage() {
     null,
   );
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
+  const [acceptWhatsAppNotice, setAcceptWhatsAppNotice] = useState(false);
   const [updatingPref, setUpdatingPref] = useState<
     keyof NotificationPrefs | null
   >(null);
@@ -122,9 +124,22 @@ export default function WhatsAppSettingsPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
-  const [commands, setCommands] = useState<Array<{ name: string; group: string; title: string; help: string; examples: string[] }>>([]);
+  const [commands, setCommands] = useState<
+    Array<{
+      name: string;
+      group: string;
+      title: string;
+      help: string;
+      examples: string[];
+    }>
+  >([]);
 
-  useEffect(() => { whatsappV2Api.commands().then(setCommands).catch(() => setCommands([])); }, []);
+  useEffect(() => {
+    whatsappV2Api
+      .commands()
+      .then(setCommands)
+      .catch(() => setCommands([]));
+  }, []);
 
   // The settings snapshot is loaded once when this client page mounts.
   useEffect(() => {
@@ -191,6 +206,13 @@ export default function WhatsAppSettingsPage() {
   }
 
   async function handleLink() {
+    if (!acceptWhatsAppNotice) {
+      setMessage({
+        type: "error",
+        text: "Setujui pemberitahuan pemrosesan WhatsApp terlebih dahulu.",
+      });
+      return;
+    }
     const currentNumbers = status?.numbers.length ?? 0;
     if (status && currentNumbers >= status.limit) {
       router.push(
@@ -204,7 +226,10 @@ export default function WhatsAppSettingsPage() {
       const res = await fetch(`${API_BASE}/users/whatsapp/numbers/challenge`, {
         method: "POST",
         headers: authHeaders(true),
-        body: JSON.stringify({ label: newLabel.trim() || undefined }),
+        body: JSON.stringify({
+          label: newLabel.trim() || undefined,
+          acceptWhatsAppNotice: true,
+        }),
       });
       if (!res.ok) {
         setMessage({
@@ -364,20 +389,102 @@ export default function WhatsAppSettingsPage() {
         </div>
       </div>
 
-      <nav aria-label="Bagian pengaturan WhatsApp" className="grid grid-cols-4 gap-1 rounded-2xl border bg-card p-1 text-center text-xs font-bold sm:text-sm">
-        <a href="#commands" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Perintah</a>
-        <a href="#connection" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Koneksi</a>
-        <a href="#notifications" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Notifikasi</a>
-        <a href="#quota" className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted">Kuota</a>
+      <nav
+        aria-label="Bagian pengaturan WhatsApp"
+        className="grid grid-cols-4 gap-1 rounded-2xl border bg-card p-1 text-center text-xs font-bold sm:text-sm"
+      >
+        <a
+          href="#commands"
+          className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted"
+        >
+          Perintah
+        </a>
+        <a
+          href="#connection"
+          className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted"
+        >
+          Koneksi
+        </a>
+        <a
+          href="#notifications"
+          className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted"
+        >
+          Notifikasi
+        </a>
+        <a
+          href="#quota"
+          className="focus-ring min-h-11 rounded-xl px-1 py-3 hover:bg-muted"
+        >
+          Kuota
+        </a>
       </nav>
 
-      <section id="commands" className="scroll-mt-24 rounded-2xl border bg-card p-4 sm:p-6">
-        <h2 className="font-black">Perintah</h2><p className="mt-1 text-sm text-muted-foreground">Contoh ini berasal dari daftar perintah yang sama dengan bot.</p>
-        <div className="mt-4 max-h-[28rem] space-y-4 overflow-y-auto pr-1">{Array.from(new Set(commands.map((command) => command.group))).map((group) => <div key={group}><h3 className="sticky top-0 bg-card py-1 text-xs font-black uppercase tracking-wider text-kicker">{group}</h3><div className="mt-1 space-y-1">{commands.filter((command) => command.group === group).map((command) => <div key={command.name} className="flex items-center gap-2 rounded-xl bg-muted/50 p-3"><div className="min-w-0 flex-1"><p className="text-sm font-bold">{command.title}</p><p className="truncate text-xs text-muted-foreground">{command.examples[0]}</p></div><button type="button" aria-label={`Salin ${command.examples[0]}`} onClick={() => void navigator.clipboard.writeText(command.examples[0])} className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl hover:bg-background"><Copy className="h-4 w-4" /></button>{status?.businessPhone && <a href={`https://wa.me/${status.businessPhone}?text=${encodeURIComponent(command.examples[0])}`} target="_blank" rel="noreferrer" aria-label={`Coba ${command.examples[0]} di WhatsApp`} className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-emerald-700 hover:bg-background"><ExternalLink className="h-4 w-4" /></a>}</div>)}</div></div>)}</div>
+      <section
+        id="commands"
+        className="scroll-mt-24 rounded-2xl border bg-card p-4 sm:p-6"
+      >
+        <h2 className="font-black">Perintah</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Contoh ini berasal dari daftar perintah yang sama dengan bot.
+        </p>
+        <div className="mt-4 max-h-[28rem] space-y-4 overflow-y-auto pr-1">
+          {Array.from(new Set(commands.map((command) => command.group))).map(
+            (group) => (
+              <div key={group}>
+                <h3 className="sticky top-0 bg-card py-1 text-xs font-black uppercase tracking-wider text-kicker">
+                  {group}
+                </h3>
+                <div className="mt-1 space-y-1">
+                  {commands
+                    .filter((command) => command.group === group)
+                    .map((command) => (
+                      <div
+                        key={command.name}
+                        className="flex items-center gap-2 rounded-xl bg-muted/50 p-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold">{command.title}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {command.examples[0]}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          aria-label={`Salin ${command.examples[0]}`}
+                          onClick={() =>
+                            void navigator.clipboard.writeText(
+                              command.examples[0],
+                            )
+                          }
+                          className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl hover:bg-background"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                        {status?.businessPhone && (
+                          <a
+                            href={`https://wa.me/${status.businessPhone}?text=${encodeURIComponent(command.examples[0])}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`Coba ${command.examples[0]} di WhatsApp`}
+                            className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-emerald-700 hover:bg-background"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ),
+          )}
+        </div>
       </section>
 
       {quota && (
-        <div id="quota" className="mf-card scroll-mt-24 space-y-5 rounded-2xl border border-border bg-card p-6">
+        <div
+          id="quota"
+          className="mf-card scroll-mt-24 space-y-5 rounded-2xl border border-border bg-card p-6"
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
@@ -445,7 +552,10 @@ export default function WhatsAppSettingsPage() {
         </div>
       )}
 
-      <div id="connection" className="mf-card scroll-mt-24 rounded-2xl border border-border bg-card p-6">
+      <div
+        id="connection"
+        className="mf-card scroll-mt-24 rounded-2xl border border-border bg-card p-6"
+      >
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold">Nomor terhubung</h2>
@@ -545,27 +655,27 @@ export default function WhatsAppSettingsPage() {
                   >
                     <Pencil className="h-3 w-3" /> Ubah label
                   </button>
+                  <span className="self-center text-xs text-muted-foreground">
+                    Notifikasi
+                  </span>
                   <button
                     type="button"
                     role="switch"
                     aria-label={`Notifikasi untuk ${number.label}`}
                     aria-checked={number.notificationsEnabled}
-                    disabled={
-                      submitting ||
-                      number.isPrimary ||
-                      number.state === "restricted"
-                    }
+                    disabled={submitting || number.state === "restricted"}
                     onClick={() =>
                       void updateNumber(number.id, {
                         notificationsEnabled: !number.notificationsEnabled,
                       })
                     }
-                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50 ${number.notificationsEnabled || number.isPrimary ? "bg-brand-lime" : "bg-muted-foreground/30"}`}
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50 ${number.notificationsEnabled ? "bg-brand-lime" : "bg-muted-foreground/30"}`}
                   >
                     <span
                       aria-hidden
-                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full border border-black/10 bg-white shadow-sm transition-transform ${number.notificationsEnabled || number.isPrimary ? "translate-x-5" : "translate-x-0"}`}
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full border border-black/10 bg-white shadow-sm transition-transform ${number.notificationsEnabled ? "translate-x-5" : "translate-x-0"}`}
                     />
+                    <span className="sr-only">Notifikasi proaktif</span>
                   </button>
                   <button
                     type="button"
@@ -597,13 +707,42 @@ export default function WhatsAppSettingsPage() {
       </div>
 
       {!loading && (
-        <div id="notifications" className="mf-card scroll-mt-24 space-y-4 rounded-2xl border border-border bg-card p-6">
+        <div
+          id="notifications"
+          className="mf-card scroll-mt-24 space-y-4 rounded-2xl border border-border bg-card p-6"
+        >
           <div className="flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
             <h2 className="font-semibold">Tambah nomor</h2>
           </div>
           {canAdd ? (
             <>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={acceptWhatsAppNotice}
+                  onChange={(event) =>
+                    setAcceptWhatsAppNotice(event.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                />
+                <span>
+                  Saya meminta Manifly memproses pesan WhatsApp yang saya kirim
+                  untuk menyediakan fitur bot. Voice note atau gambar hanya
+                  dikirim ke penyedia AI saat saya menggunakan fitur tersebut.
+                  Ini bukan persetujuan notifikasi otomatis; notifikasi proaktif
+                  memerlukan persetujuan terpisah. Baca{" "}
+                  <a
+                    className="underline"
+                    href="/legal/privacy"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Kebijakan Privasi
+                  </a>
+                  .
+                </span>
+              </label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   value={newLabel}
@@ -700,12 +839,32 @@ export default function WhatsAppSettingsPage() {
             <h2 className="text-sm font-semibold">Jenis notifikasi WhatsApp</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            Nomor utama selalu menjadi tujuan default. Nomor tambahan menerima
-            notifikasi hanya jika toggle pada kartunya diaktifkan.
+            Notifikasi proaktif hanya dikirim setelah persetujuan di bawah,
+            pemilihan nomor penerima, dan pengaktifan jenis notifikasinya.
           </p>
-          {numbers.filter(
-            (number) => number.isPrimary || number.notificationsEnabled,
-          ).length > 1 && (
+          <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border bg-muted/30 p-3">
+            <span>
+              <span className="block text-sm font-semibold">
+                Izinkan notifikasi proaktif WhatsApp
+              </span>
+              <span className="mt-1 block text-xs text-muted-foreground">
+                Persetujuan ini terpisah dari menghubungkan bot. Kamu dapat
+                mematikannya kapan saja dengan membalas STOP.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              aria-label="Izinkan notifikasi proaktif WhatsApp"
+              aria-checked={prefs.waProactiveOptIn}
+              checked={prefs.waProactiveOptIn}
+              disabled={updatingPref === "waProactiveOptIn"}
+              onChange={() => void togglePref("waProactiveOptIn")}
+              className="mt-1 h-5 w-5 shrink-0 accent-primary"
+            />
+          </label>
+          {numbers.filter((number) => number.notificationsEnabled).length >
+            1 && (
             <p className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
               Notifikasi aktif di lebih dari satu nomor. Setiap tujuan dapat
               menambah volume dan biaya pesan WhatsApp.

@@ -82,7 +82,13 @@ export interface WhatsappStatus {
   linked: boolean;
   activeCount: number;
   businessPhone?: string | null;
-  numbers: Array<{ id: string; label: string; phone: string; state: string; isPrimary: boolean }>;
+  numbers: Array<{
+    id: string;
+    label: string;
+    phone: string;
+    state: string;
+    isPrimary: boolean;
+  }>;
 }
 
 export interface WhatsappChallenge {
@@ -97,9 +103,26 @@ export interface WhatsappChallenge {
 
 export const whatsappV2Api = {
   status: () => request<WhatsappStatus>("/users/whatsapp"),
-  challenge: (label: string) => request<WhatsappChallenge>("/users/whatsapp/link", { method: "POST", body: JSON.stringify({ label }) }),
-  challengeStatus: (id: string) => request<WhatsappChallenge>(`/users/whatsapp/challenges/${id}`),
-  commands: () => request<Array<{ name: string; group: string; title: string; help: string; examples: string[]; kind: string; confirmation: boolean; webPath?: string }>>("/whatsapp/commands"),
+  challenge: (label: string) =>
+    request<WhatsappChallenge>("/users/whatsapp/link", {
+      method: "POST",
+      body: JSON.stringify({ label }),
+    }),
+  challengeStatus: (id: string) =>
+    request<WhatsappChallenge>(`/users/whatsapp/challenges/${id}`),
+  commands: () =>
+    request<
+      Array<{
+        name: string;
+        group: string;
+        title: string;
+        help: string;
+        examples: string[];
+        kind: string;
+        confirmation: boolean;
+        webPath?: string;
+      }>
+    >("/whatsapp/commands"),
 };
 
 export interface FeedbackEntry {
@@ -111,25 +134,67 @@ export interface FeedbackEntry {
   status: "received" | "reviewing" | "planned" | "completed" | "declined";
   source: "web" | "whatsapp" | "help";
   createdAt: string;
-  replies: Array<{ id: string; author: string; message: string; createdAt: string }>;
+  replies: Array<{
+    id: string;
+    author: string;
+    message: string;
+    createdAt: string;
+  }>;
 }
 
 export const feedbackApi = {
   list: () => request<FeedbackEntry[]>("/feedback"),
-  create: (data: { type: FeedbackEntry["type"]; area: string; message: string; rating?: number; contactConsent?: boolean; source?: FeedbackEntry["source"]; helpArticleSlug?: string; context?: Record<string, unknown> }) => request<FeedbackEntry>("/feedback", { method: "POST", body: JSON.stringify(data) }),
-  attach: (id: string, file: File) => { const body = new FormData(); body.append("file", file); return request<{ id: string; screenshotKey: string }>(`/feedback/${id}/attachments`, { method: "POST", body }); },
+  create: (data: {
+    type: FeedbackEntry["type"];
+    area: string;
+    message: string;
+    rating?: number;
+    contactConsent?: boolean;
+    source?: FeedbackEntry["source"];
+    helpArticleSlug?: string;
+    context?: Record<string, unknown>;
+  }) =>
+    request<FeedbackEntry>("/feedback", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  attach: (id: string, file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return request<{ id: string; screenshotKey: string }>(
+      `/feedback/${id}/attachments`,
+      { method: "POST", body },
+    );
+  },
 };
 
 export interface OnboardingChecklist {
   completed: boolean;
   completedCount: number;
-  steps: Array<{ key: string; label: string; completed: boolean; href: string; helpSlug: string }>;
+  steps: Array<{
+    key: string;
+    label: string;
+    completed: boolean;
+    href: string;
+    helpSlug: string;
+  }>;
 }
 
 export interface FinancialSummary {
   smartRules: { activeCount: number };
-  plan: { goalId: string; name: string; progress: number; targetAmount: number; percentage: number } | null;
-  netWorth: { total: number; currency: string; date: string; ageDays: number } | null;
+  plan: {
+    goalId: string;
+    name: string;
+    progress: number;
+    targetAmount: number;
+    percentage: number;
+  } | null;
+  netWorth: {
+    total: number;
+    currency: string;
+    date: string;
+    ageDays: number;
+  } | null;
   analytics: { expense30Days: number };
   health: { score: number | null; period: string } | null;
 }
@@ -137,8 +202,15 @@ export interface FinancialSummary {
 export const experienceApi = {
   checklist: () => request<OnboardingChecklist>("/onboarding/checklist"),
   financialSummary: () => request<FinancialSummary>("/financial/summary"),
-  uiState: (key: string) => request<{ key: string; value: Record<string, unknown> | null }>(`/users/ui-state/${key}`),
-  setUiState: (key: string, value: Record<string, unknown>) => request(`/users/ui-state/${key}`, { method: "PUT", body: JSON.stringify({ value }) }),
+  uiState: (key: string) =>
+    request<{ key: string; value: Record<string, unknown> | null }>(
+      `/users/ui-state/${key}`,
+    ),
+  setUiState: (key: string, value: Record<string, unknown>) =>
+    request(`/users/ui-state/${key}`, {
+      method: "PUT",
+      body: JSON.stringify({ value }),
+    }),
 };
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -471,6 +543,7 @@ export const pushApi = {
 };
 
 export interface WaNotificationSettings {
+  waProactiveOptIn: boolean;
   notifyMonthlyRecap: boolean;
   notifyOverBudget: boolean;
   notifyDebtDue: boolean;
