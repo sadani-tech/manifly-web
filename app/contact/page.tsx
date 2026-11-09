@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Mail } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { PublicChrome } from '@/components/public/PublicChrome';
 import { publicConfig } from '@/lib/public-config';
 
@@ -19,6 +19,10 @@ export default function ContactPage() {
         <a href={`mailto:${publicConfig.supportEmail}`} className="mt-10 flex items-center gap-4 rounded-3xl border-2 border-black/15 bg-white p-6 shadow-[7px_7px_0_#c9f45a] dark:border-white/10 dark:bg-white/5">
           <span className="rounded-2xl bg-brand-lime p-4 text-brand-navy"><Mail className="h-6 w-6" /></span>
           <span><strong className="block text-lg">{publicConfig.supportEmail}</strong><small className="opacity-60">Respons awal maksimal 2 hari kerja, Senin–Jumat WIB.</small></span>
+        </a>
+        <a href={`tel:${publicConfig.supportPhone}`} className="mt-4 flex items-center gap-4 rounded-3xl border-2 border-black/15 bg-white p-6 shadow-[7px_7px_0_#c9f45a] dark:border-white/10 dark:bg-white/5">
+          <span className="rounded-2xl bg-brand-lime p-4 text-brand-navy"><Phone className="h-6 w-6" /></span>
+          <span><strong className="block text-lg">0851 1151 0038</strong><small className="opacity-60">WhatsApp dan telepon dukungan</small></span>
         </a>
       </section>
     </PublicChrome>
